@@ -1,23 +1,34 @@
-#include "LedAnimation.hpp"
-#include <Logger.hpp>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdint.h>
+#include <iostream>
 
-VehicleDetection::VehicleDetection() {
-    IOhandler = new IOHandler.getInstance();
-}
+#include <onposix/AbstractThread.hpp>
+#include <onposix/Logger.hpp>
 
-void VehicleDetection::run() {
-    uint8_t ledvalue=0x00;
+#include "RevPiParkingCtrl.hpp"
+#include "LedAnimation.hpp"
+//#include "IOHandler.hpp"
+#include "piControlIf.hpp"
+
+LedAnimation::LedAnimation() {};
+LedAnimation::~LedAnimation() {};
+
+using namespace onposix;
+
+void LedAnimation::run() {
+    uint8_t ledvalue=0x01;
     uint8_t newledvalue=0x00;
-    
-    ledvalue=0x01;
-    
-    for (;;)  {    
-        SetIO("Leds", ledvalue);
-        newledvalue = (x << 1) | (x >> 7); // rotate left
+
+    printf("Led animation started\n");
+    piControl piCtrl;
+
+    while (1)  {    
+        piCtrl.Write(72, 1, &ledvalue);
+        newledvalue = (ledvalue << 1) | (ledvalue >> 3); // rotate left
         ledvalue = newledvalue;
-        usleep(SETTINGS_UPDATE_INTERVAL); 
+
+        usleep(200000); 
     }
 }
