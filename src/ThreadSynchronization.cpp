@@ -1,26 +1,40 @@
 #include "ThreadSynchronization.hpp"
-#include <Logger.hpp>
 
-static void ThreadSynchronization::LockSettings() {
+using namespace onposix;
+
+pthread_mutex_t ThreadSynchronization::SynchroMutex = PTHREAD_MUTEX_INITIALIZER;
+
+ThreadSynchronization* ThreadSynchronization::instance = NULL;
+
+void ThreadSynchronization::LockSettings() {
     SerialMutex.lock();
 }
 
-static void ThreadSynchronization::UnlockSettings() {
+void ThreadSynchronization::UnlockSettings() {
     SerialMutex.unlock();
 }
 
-static void ThreadSynchronization::LockSerial() {
+void ThreadSynchronization::LockSerial() {
     SerialMutex.lock();
 }
 
-static void ThreadSynchronization::UnlockSerial() {
+void ThreadSynchronization::UnlockSerial() {
     SerialMutex.unlock();
 }
 
-static void ThreadSynchronization::LockIO() {
+void ThreadSynchronization::LockIO() {
     IOMutex.lock();
 }
 
-static void ThreadSynchronization::UnlockIO() {
+void ThreadSynchronization::UnlockIO() {
     IOMutex.unlock();
+}
+
+ThreadSynchronization * ThreadSynchronization::getInstance() {
+    pthread_mutex_lock(&SynchroMutex);
+    if (instance == NULL) {
+         instance = new ThreadSynchronization();
+    }
+    pthread_mutex_unlock(&SynchroMutex);
+    return instance;
 }

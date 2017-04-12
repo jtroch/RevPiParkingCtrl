@@ -1,23 +1,31 @@
-#include "VehicleDetection.hpp"
-#include <Logger.hpp>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <errno.h>
+#include <stdint.h>
+#include <iostream>
+#include <syslog.h>
+#include <sys/time.h>
 
-VehicleDetection::VehicleDetection(PosixSharedQueue<HttpMsgType>& queue) {
+#include "VehicleDetection.hpp"
+
+using namespace onposix;
+
+VehicleDetection::VehicleDetection(PosixSharedQueue<HttpMsgType>* queue) {
     // Work-queue
-    this.HttpWorkQueue = queue;
-    
-    IOhandler = new IOHandler.getInstance();
+    HttpWorkQueue = queue;
 
     // Configure timers
     struct sigaction sa_entrance, sa_exit;
     
     /* Install timer handler for entrance loop detection */
     memset (&sa_entrance, 0, sizeof (sa_entrance));
-    sa_entrance.sa_handler = &EntranceTimerCallback;
+    //sa_entrance.sa_handler = &EntranceTimerCallback;
     sigaction (SIGVTALRM, &sa_entrance, NULL);
 
     /* Install timer handler for exit loop detection */
     memset (&sa_exit, 0, sizeof (sa_exit));
-    sa_exit.sa_handler = &ExitTimerCallback;
+    //sa_exit.sa_handler = &ExitTimerCallback;
     sigaction (SIGVTALRM, &sa_exit, NULL); 
 }
 
@@ -25,7 +33,7 @@ void VehicleDetection::FireEntranceTimer() {
 
     /* Configure the timers to expire after .... msec. (and no repeat) */
     EntranceTimer.it_value.tv_sec = 0;
-    EntranceTimer.it_value.tv_usec = Settings.GetDetectionLoopTimeout();
+    EntranceTimer.it_value.tv_usec = Settings::GetDetectionLoopTimeout();
     EntranceTimer.it_interval.tv_sec = 0;
     EntranceTimer.it_interval.tv_usec = 0;
 
@@ -36,7 +44,7 @@ void VehicleDetection::FireExitTimer() {
 
     /* Configure the timers to expire after .... msec. (and no repeat) */
     ExitTimer.it_value.tv_sec = 0;
-    ExitTimer.it_value.tv_usec = Settings.GetDetectionLoopTimeout();
+    ExitTimer.it_value.tv_usec = Settings::GetDetectionLoopTimeout();
     ExitTimer.it_interval.tv_sec = 0;
     ExitTimer.it_interval.tv_usec = 0;
     
@@ -48,10 +56,10 @@ void VehicleDetection::FireExitTimer() {
 void VehicleDetection::EntranceTimerCallback(int signum) {
    uint8_t bOnLoop;
 
-   bOnLoop = IOhandler.GetIO("EntranceLoopActive");
+   bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopActive");
    if (bOnLoop) {
-      if( !Settings.PLCWorksAutonomously()) {    
-          this.HttpWorkQueue.push(HTTP_POST_ENTRANCE);
+      if( !Settings::PLCWorksAutonomously()) {    
+          HttpWorkQueue->push(HTTP_MSG_POST_ENTRANCE);
       } else {
           // trigger barrier directly
           
@@ -65,11 +73,11 @@ void VehicleDetection::EntranceTimerCallback(int signum) {
 void VehicleDetection::ExitTimerCallback(int signum) {
    bool bOnLoop;
 
-   bOnLoop = digitalRead(CONTROLLINO_IN1);
+   bOnLoop = IOHandler::getInstance()->GetIO("ExitLoopActive");
 
-   if (bOnLoop)
-      if( !isAutonomous()) {
-          this.HttpWorkQueue.add(HTTP_POST_EXIT);
+   if (bOnLoop) {
+      if( !Settings::PLCWorksAutonomously()) {
+          HttpWorkQueue->push(HTTP_MSG_POST_EXIT);
       } else {
           // send message to barrier thread
       }
@@ -81,11 +89,13 @@ void VehicleDetection::run() {
     uint32_t bWasOnEntryLoop=0;
     uint32_t bOnExitLoop=0;
     uint32_t bWasOnExitLoop=0;
+
+    bool GotApiIdKey=true;
     
     while(1)  {
         if (GotApiIdKey) {
-            bOnEntryLoop = IOhandler.GetIO("EntranceLoopActive");
-            bOnExitLoop = IOhandler.GetIO("ExitLoopActive");
+            bOnEntryLoop = IOHandler::getInstance()->GetIO("EntranceLoopActive");
+            bOnExitLoop = IOHandler::getInstance()->GetIO("ExitLoopActive");
 
             // entry loop
             if (bOnEntryLoop && !bWasOnEntryLoop) { // rising edge detection
@@ -104,7 +114,7 @@ void VehicleDetection::run() {
                 bWasOnExitLoop = false;
             }
         }
-        usleep(SETTINGS_UPDATE_INTERVAL20); 
+        usleep(SETTINGS_UPDATE_INTERVAL); 
     }
-    return NULL;
+    return;
 }

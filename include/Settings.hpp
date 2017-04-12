@@ -1,33 +1,41 @@
-#include "IOHandler.hpp"
-#include <PosixSharedQueue.hpp>
+//#include "IOHandler.hpp"
+#include <onposix/AbstractThread.hpp>
+#include <onposix/PosixSharedQueue.hpp>
+
+#include <restclient-cpp/connection.h>
+#include <restclient-cpp/restclient.h>
+
+using namespace onposix;
 
 class Settings : public AbstractThread {
 private:
-    PosixSharedQueue<HttpMsgTypeint>& HttpWorkQueue;
+    PosixSharedQueue<HttpMsgType> * HttpWorkQueue;
 
     static bool EntranceBarrierContinuouslyOpen;
     static bool ExitBarrierContinuouslyOpen;
-    static bool PLCWorksAutonomous;
-    static int DetectionLoopTimeout;
-    static int HttpReplyTimeout;
-    static int BarrierPulseLength;
-    static int TestOutput;
+    static bool PLCWorksAuto;
+    static int  DetectionLoopTimeout;
+    static int  HttpReplyTimeout;
+    static int  BarrierPulseLength;
+    static int  TestOutput;
+
+    RestClient::Connection* HttpConnection;
 
 public:
-    Settings(PosixSharedQueue<HttpMsgType>& queue);
+    Settings(PosixSharedQueue<HttpMsgType> * queue);
     void run();
 
-    static Update(
+    static void Update(
         bool EntranceBarrierContinuouslyOpen,
         bool ExitBarrierContinuouslyOpen,
-        bool PLCWorksAutonomous,
+        bool PLCWorksAuto,
         int DetectionLoopTimeout,
         int HttpReplyTimeout,
         int BarrierPulseLength,
         int TestOutput
     );
     static bool PLCWorksAutonomously();
-    static bool BarrierContinuouslyOpen(BarrierType type();
+    static bool BarrierContinuouslyOpen(BarrierType type);
     static int  GetDetectionLoopTimeout();
     static int  GetHttpReplyTimeout();
     static int  GetBarrierPulseLength();

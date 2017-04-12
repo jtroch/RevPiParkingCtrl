@@ -1,91 +1,109 @@
-#include "PevPiParkingCtrl.h"
+#include <syslog.h>
+
+#include "RevPiParkingCtrl.hpp"
+#include "ThreadSynchronization.hpp"
+#include "IOHandler.hpp"
 #include "Settings.hpp"
-#include <Logger.hpp>
+#include "Http.hpp"
 
 bool Settings::EntranceBarrierContinuouslyOpen=false;
 bool Settings::ExitBarrierContinuouslyOpen=false;
-bool Settings::PLCWorksAutonomously=false;
+bool Settings::PLCWorksAuto=false;
 int  Settings::DetectionLoopTimeout=3000;
 int  Settings::HttpReplyTimeout=2000;
 int  Settings::BarrierPulseLength=1000;
 int  Settings::TestOutput=0;
 
-static void Settings::Update(
+
+Settings::Settings(PosixSharedQueue<HttpMsgType> * queue) {
+    // Work-queue
+    HttpWorkQueue = queue;
+
+    // get a connection object
+    HttpConnection = new RestClient::Connection("http://192.168.1.110");
+}
+
+void Settings::Update(
     bool EntranceBarrierContinuouslyOpen,
     bool ExitBarrierContinuouslyOpen,
-    bool PLCWorksAutonomously,
+    bool PLCWorksAuto,
     int DetectionLoopTimeout,
     int HttpReplyTimeout,
     int BarrierPulseLength,
     int TestOutput
 ) {
     // Critical section
-    ThreadSynchronization.LockSettings();
+    ThreadSynchronization::getInstance()->LockSettings();
     
-    this.EntranceBarrierContinuouslyOpen=EntranceBarrierContinuouslyOpen;
-    this.ExitBarrierContinuouslyOpen=ExitBarrierContinuouslyOpen;
-    this.PLCWorksAutonomously=PLCWorksAutonomously;
-    this.DetectionLoopTimeout=DetectionLoopTimeout;
-    this.HttpReplyTimeout=HttpReplyTimeout;
-    this.BarrierPulseLength=BarrierPulseLength;
-    this.TestOutput=TestOutput;
+    EntranceBarrierContinuouslyOpen=EntranceBarrierContinuouslyOpen;
+    ExitBarrierContinuouslyOpen=ExitBarrierContinuouslyOpen;
+    PLCWorksAuto=PLCWorksAutonomously;
+    DetectionLoopTimeout=DetectionLoopTimeout;
+    HttpReplyTimeout=HttpReplyTimeout;
+    BarrierPulseLength=BarrierPulseLength;
+    TestOutput=TestOutput;
 
     // End critical section
-    ThreadSynchronization.UnlockSettings();
+    ThreadSynchronization::getInstance()->UnlockSettings();
 }
 
-static bool Settings::PLCWorksAutonomously() {
-    IOHandler IOhandler = new IOHandler();
-    uint32_t externalHWsetting;
+bool Settings::PLCWorksAutonomously() {
+    int externalHWsetting=0;
+    bool ret=false;
 
-    externalHWsetting = IOhandler.GetIO("PLCWorksAutonomously");
-    
-    if ( (externalHWsetting==1) || Settings.PLCWorksAutonomously) return true;
-    else return false;
+    ThreadSynchronization::getInstance()->LockSettings();
+    externalHWsetting = IOHandler::getInstance()->GetIO("PLCWorksAutonomously");
+    if ( (externalHWsetting==1) || PLCWorksAuto) ret=true;
+    ThreadSynchronization::getInstance()->UnlockSettings();
+
+    return ret;
 }
 
-static bool Settings::BarrierContinuouslyOpen(BarrierType type) {
-    IOHandler IOhandler = new IOHandler();
-    uint32_t externalHWsetting;
+bool Settings::BarrierContinuouslyOpen(BarrierType type) {
+    int externalHWsetting=0;
+    bool ret=false;
 
+    ThreadSynchronization::getInstance()->LockSettings();
     switch (type) {
         case ENTRANCE_BARRIER:
-            externalHWsetting = IOhandler.GetIO("EntranceBarrierContinuouslyOpen");  
-            if ( (externalHWsetting==1) || Settings.EntranceBarrierContinuouslyOpen) return true;
-            else return false;
+            externalHWsetting = IOHandler::getInstance()->GetIO("EntranceBarrierContinuouslyOpen");  
+            if ( (externalHWsetting==1) || EntranceBarrierContinuouslyOpen) ret=true;
         case EXIT_BARRIER:
-            externalHWsetting = IOhandler.GetIO("ExitBarrierContinuouslyOpen");  
-            if ( (externalHWsetting==1) || Settings.ExitBarrierContinuouslyOpen) return true;
-            else return false;
+            externalHWsetting = IOHandler::getInstance()->GetIO("ExitBarrierContinuouslyOpen");  
+            if ( (externalHWsetting==1) || ExitBarrierContinuouslyOpen) ret=true;
     }
+    ThreadSynchronization::getInstance()->UnlockSettings();
+    return ret;
 }
 
-static void Settings::GetDetectionLoopTimeout() {
+int Settings::GetDetectionLoopTimeout() {
     // Critical section
-    ThreadSynchronization.LockSettings();
-    return this.DetectionLoopTimeout;
-    ThreadSynchronization.UnlockSettings();
+    ThreadSynchronization::getInstance()->LockSettings();
+    return DetectionLoopTimeout;
+    ThreadSynchronization::getInstance()->UnlockSettings();
 }
 
-static void Settings::GetHttpReplyTimeout() {
+int Settings::GetHttpReplyTimeout() {
     // Critical section
-    ThreadSynchronization.LockSettings();
-    return this.HttpReplyTimeoutimeout;
-    ThreadSynchronization.UnlockSettings();
+    ThreadSynchronization::getInstance()->LockSettings();
+    return HttpReplyTimeout;
+    ThreadSynchronization::getInstance()->UnlockSettings();
 }
 
-static void Settings::GetBarrierPulseLength() {
+int Settings::GetBarrierPulseLength() {
     // Critical section
-    ThreadSynchronization.LockSettings();
-    return this.BarrierPulseLength;
-    ThreadSynchronization.UnlockSettings();
+    ThreadSynchronization::getInstance()->LockSettings();
+    return BarrierPulseLength;
+    ThreadSynchronization::getInstance()->UnlockSettings();
 }
 
 void Settings::run() {
     
     while(1)  {
-        this.HttpWorkQueue.push(HTTP_GET_SETTINGS);
-        usleep(SETTINGS_UPDATE_INTERVAL); 
+        syslog(LOG_DEBUG, "SETTINGS: sending GET request");
+        Http::HandleRequest(HttpConnection, HTTP_MSG_GET_SETTINGS);
+        
+        usleep(5000000); 
     }
-    return NULL;
+    return;
 }

@@ -3,13 +3,11 @@
 #include <errno.h>
 #include <stdint.h>
 #include <iostream>
+#include <syslog.h>
 
 #include <onposix/AbstractThread.hpp>
-#include <onposix/Logger.hpp>
-
 #include "RevPiParkingCtrl.hpp"
 #include "LedAnimation.hpp"
-//#include "IOHandler.hpp"
 #include "piControlIf.hpp"
 
 LedAnimation::LedAnimation() {};
@@ -29,6 +27,7 @@ void LedAnimation::run() {
         newledvalue = (ledvalue << 1) | (ledvalue >> 3); // rotate left
         ledvalue = newledvalue;
 
-        usleep(200000); 
+        syslog(LOG_DEBUG, "Led...");
+        usleep(2000000); 
     }
 }

@@ -1,4 +1,7 @@
+#include <stdint.h>
 
+#ifndef RevPiParkingCtrl_H
+#define RevPiParkingCtrl_H
 
 //#define LOG_LEVEL_CONSOLE  LOG_NOLOG
 //#define LOG_LEVEL_CONSOLE  LOG_WARNINGS
@@ -10,4 +13,18 @@
 //#define LOG_LEVEL_FILE  LOG_ERRORS
 //#define LOG_LEVEL_FILE  LOG_ALL
 
-//#define SETTINGS_UPDATE_INTERVAL 20000
+#define SETTINGS_UPDATE_INTERVAL 1000000
+
+enum HttpMsgType {
+    HTTP_MSG_GET_SETTINGS,
+    HTTP_MSG_GET_IDKEY,
+    HTTP_MSG_POST_ENTRANCE,
+    HTTP_MSG_POST_EXIT
+};
+
+enum BarrierType {
+    ENTRANCE_BARRIER,
+    EXIT_BARRIER
+};
+
+#endif

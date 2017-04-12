@@ -1,12 +1,15 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "ThreadSynchronization.hpp"
-#include <Logger.hpp>
+#include "IOHandler.hpp"
 #include <piControlIf.hpp>
 #include <piControl.h>
-#include <stdio.h>
 
-IOHandler::IOHandler() {};
+IOHandler* IOHandler::instance = NULL;
 
-uint32_t IOHandler::GetIO(char* pszVariableName) {
+int IOHandler::GetIO(const char* pszVariableName) {
     int rc=-1;
     SPIVariable sPiVariable;
     SPIValue sPIValue;
@@ -14,13 +17,14 @@ uint32_t IOHandler::GetIO(char* pszVariableName) {
     uint16_t i16uValue;
     uint32_t i32uValue;
 
-    strncpy(sPiVariable.strVarName, pszVariableName, sizeof(sPiVariable.strVarName));
+    //strncpy(sPiVariable.strVarName, pszVariableName, sizeof(sPiVariable.strVarName));
     
-    ThreadSynchronization.LockIO();
+    ThreadSynchronization::getInstance()->LockIO();
 
-    rc = piControlGetVariableInfo(&sPiVariable);
+    rc = piCtrl.GetVariableInfo(&sPiVariable);
     if (rc < 0) {
         printf("Cannot find variable '%s'\n", pszVariableName);
+        ThreadSynchronization::getInstance()->UnlockIO();
         return -1;
     }
     sPIValue.i16uAddress = sPiVariable.i16uAddress;
@@ -30,40 +34,43 @@ uint32_t IOHandler::GetIO(char* pszVariableName) {
     while (rc < 0) {
         switch (sPiVariable.i16uLength) {
             case 1: 
-                rc = piControlGetBitValue(&sPIValue);
+                rc = piCtrl.GetBitValue(&sPIValue);
                 printf("Get bit value: %d\n", sPIValue.i8uValue);
                 break;
             case 8: 
-                rc = piControlRead(sPiVariable.i16uAddress, 1, (uint8_t*)&i8uValue);
+                rc = piCtrl.Read(sPiVariable.i16uAddress, 1, (uint8_t*)&i8uValue);
                 printf("Get u8 value: %d\n", sPIValue.i8uValue);
                 break;
             case 16:
-                rc = piControlRead(sPiVariable.i16uAddress, 2, (uint8_t*)&i16uValue);
+                rc = piCtrl.Read(sPiVariable.i16uAddress, 2, (uint8_t*)&i16uValue);
                 printf("Value of %s: %04x hex (=%d dez)\n", pszVariableName, i16uValue, i16uValue);
                 break;
             case 32:
-                rc = piControlRead(sPiVariable.i16uAddress, 4, (uint8_t*)&i32uValue);
+                rc = piCtrl.Read(sPiVariable.i16uAddress, 4, (uint8_t*)&i32uValue);
                 printf("Value of %s: %08x hex (=%d dez)\n", pszVariableName, i32uValue, i32uValue);
                 break;
         }
-        sleep(1);
+        usleep(1000);
     }
 
-    ThreadSynchronization.UnlockIO();
+    return rc;
+
+    ThreadSynchronization::getInstance()->UnlockIO();
 }
 
-int IOHandler::SetIO(char* pszVariableName, uint32_t value) {
+int IOHandler::SetIO(const char* pszVariableName, uint32_t value) {
     int rc=-1;
     SPIVariable sPiVariable;
     SPIValue sPIValue;
     uint8_t i8uValue;
     uint16_t i16uValue;
    
-    ThreadSynchronization.LockIO();
+    ThreadSynchronization::getInstance()->LockIO();
 
-    rc = piControlGetVariableInfo(&sPiVariable);
+    rc = piCtrl.GetVariableInfo(&sPiVariable);
     if (rc < 0) {
         printf("Cannot find variable '%s'\n", pszVariableName);
+        ThreadSynchronization::getInstance()->UnlockIO();
         return -1;
     }
     sPIValue.i16uAddress = sPiVariable.i16uAddress;
@@ -72,33 +79,34 @@ int IOHandler::SetIO(char* pszVariableName, uint32_t value) {
 
     switch (sPiVariable.i16uLength) {
         case 1: 
-            rc = piControlWrite(sPiVariable.i16uAddress, 1, (uint8_t *)&value);
+            rc = piCtrl.Write(sPiVariable.i16uAddress, 1, (uint8_t *)&value);
             if (rc > 0) printf("Set bit %d on byte at offset %d. Value %d\n", sPIValue.i8uBit, sPIValue.i16uAddress, sPIValue.i8uValue);
         case 8: 
-            rc = piControlWrite(sPiVariable.i16uAddress, 1, (uint8_t *)&value);
+            rc = piCtrl.Write(sPiVariable.i16uAddress, 1, (uint8_t *)&value);
             if (rc > 0) printf("Write value %d dez (=%02x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
             break;
         case 16:
-            rc = piControlWrite(sPiVariable.i16uAddress, 2, (uint8_t *)&value);
+            rc = piCtrl.Write(sPiVariable.i16uAddress, 2, (uint8_t *)&value);
             if (rc > 0) printf("Write value %d dez (=%02x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
             break;
         case 32:
-            rc = piControlWrite(sPiVariable.i16uAddress, 4, (uint8_t *)&value);
+            rc = piCtrl.Write(sPiVariable.i16uAddress, 4, (uint8_t *)&value);
             if (rc > 0) printf("Write value %d dez (=%04x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
             break;
     }
+    ThreadSynchronization::getInstance()->UnlockIO();
     if (rc < 0)  {
-        printf("Write error %s\n", getWriteError(rc));
+        printf("Write error\n");
         return -1;
     } return 1;
 }
 
-IOHandler::IOHandler getInstance() {
-    ThreadSynchronization.LockIO();
-        if (instance == null) {
+IOHandler * IOHandler::getInstance() {
+    ThreadSynchronization::getInstance()->LockIO();
+        if (instance == NULL) {
             instance = new IOHandler();
         }
-    ThreadSynchronization.UnlockIO();
+    ThreadSynchronization::getInstance()->UnlockIO();
     return instance;
 }
     

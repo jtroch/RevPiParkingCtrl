@@ -1,20 +1,27 @@
-#include <PosixMutex.h>
+#include <pthread.h>
+#include <onposix/PosixMutex.hpp>
+
+using namespace onposix;
 
 class ThreadSynchronization {
 private:
-    static PosixMutex SerialMutex;
-    static PosixMutex SettingsMutex;
-    static PosixMutex IOMutex;
+    static pthread_mutex_t SynchroMutex;
+    PosixMutex SerialMutex;
+    PosixMutex SettingsMutex;
+    PosixMutex IOMutex;
 
-    ThreadSynchronization() {} 
+    static ThreadSynchronization * instance;
+    ThreadSynchronization() {};
 
 public:
-    static void LockSettings();
-    static void UnlockSettings();
-    static void LockSerial();
-    static void UnlockSerial();
-    static void RxTxSemaphoreTake();
-    static void RxTxSemaphoreGive();
-    static void LockIO();
-    static void UnlockIO();
+    static ThreadSynchronization * getInstance();
+
+    void LockSettings();
+    void UnlockSettings();
+    void LockSerial();
+    void UnlockSerial();
+    void RxTxSemaphoreTake();
+    void RxTxSemaphoreGive();
+    void LockIO();
+    void UnlockIO();
 };

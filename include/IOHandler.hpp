@@ -1,14 +1,15 @@
-final class IOHandler {
+#include <piControlIf.hpp>
+#include <piControl.h>
+#include <stdio.h>
+
+class IOHandler {
     private:
-        static volatile IOHandler instance = null;
-        IOHandler();
+        static IOHandler * instance;
+        IOHandler() {};
+        piControl piCtrl;
 
     public:
-        static IOHandler getInstance();
-        int GetIO(char* name);
-        int SetIO(char* name, uint32_t value);
-}
-
-
-
-    
+        static IOHandler * getInstance();
+        int GetIO(const char* name);
+        int SetIO(const char* name, uint32_t value);
+};  
