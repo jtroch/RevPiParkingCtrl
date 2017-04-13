@@ -1,17 +1,20 @@
-#include "IOHandler.hpp"
-#include <AbstractThread.hpp>
-#include <PosixSharedQueue.hpp>
-#include <Logger.hpp>
+#include <onposix/AbstractThread.hpp>
+#include <onposix/PosixSharedQueue.hpp>
+
+#include <restclient-cpp/connection.h>
+#include <restclient-cpp/restclient.h>
+
+using namespace onposix;
 
 class Authentication : public AbstractThread {
 private:
-    PosixSharedQueue<HttpMsgType>& HttpWorkQueue;
+    RestClient::Connection* HttpConnection;
 
     static int Id;
     static int Key;
-
+    
 public:
-    Authentication(WorkQueue<HttpMsgType>& queue);
+    Authentication();
     void run();
 
     static int GetId();

@@ -17,6 +17,7 @@
 #include "RevPiParkingCtrl.hpp"
 #include "LedAnimation.hpp"
 #include "Settings.hpp"
+#include "Authentication.hpp"
 
 /*
 #include "VehicleDetection.hpp"
@@ -27,7 +28,7 @@
 
 int main()
 {
-    PosixSharedQueue<HttpMsgType> * httpWorkQueue = new PosixSharedQueue<HttpMsgType>();
+    //PosixSharedQueue<HttpMsgType> * httpWorkQueue = new PosixSharedQueue<HttpMsgType>();
     
     // initialize RestClient
     RestClient::init();
@@ -41,23 +42,30 @@ int main()
     */
     
     LedAnimation ledAnimation;
-    Settings settings(httpWorkQueue);
-
-    //DEBUG("Parking " << "PLC");
-    //DEBUG("Parking " << "PLC");
+    Settings settings();
+    Authentication authentication;
     
-    //DEBUG("-------------------------------------------------------\n"); 
-    //DEBUG("                    Parking PLC                        \n");
-    //DEBUG("-------------------------------------------------------\n");
+    std::cout << "-------------------------------------------------------" << std::endl;
+    std::cout << "                    Parking PLC                        " << std::endl;
+    std::cout <<  "-------------------------------------------------------" << std::endl;
 
     std::cout << "Starting Tasks...\n";
 
-    syslog(LOG_DEBUG, "Dit is een debug");
-    syslog(LOG_WARNING, "Dit is een warning");
-    syslog(LOG_ERR, "Dit is een error");
+    syslog(LOG_DEBUG, "--------------------------------------------------");
+    syslog(LOG_DEBUG, "-----------------   Parking PLC ------------------");
+    syslog(LOG_DEBUG, "--------------------------------------------------");
+
+    syslog(LOG_DEBUG, "Starting Authentication ..");
+
+    //syslog(LOG_WARNING, "Dit is een warning");
+    //syslog(LOG_ERR, "Dit is een error");
+
+    authentication.start();
+    //authentication.waitForTermination();
 
     ledAnimation.start();
     settings.start();
+    
 
     ledAnimation.waitForTermination();
     settings.waitForTermination();

@@ -11,10 +11,7 @@
 
 using namespace onposix;
 
-VehicleDetection::VehicleDetection(PosixSharedQueue<HttpMsgType>* queue) {
-    // Work-queue
-    HttpWorkQueue = queue;
-
+VehicleDetection::VehicleDetection() {
     // Configure timers
     struct sigaction sa_entrance, sa_exit;
     
@@ -59,7 +56,7 @@ void VehicleDetection::EntranceTimerCallback(int signum) {
    bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopActive");
    if (bOnLoop) {
       if( !Settings::PLCWorksAutonomously()) {    
-          HttpWorkQueue->push(HTTP_MSG_POST_ENTRANCE);
+         // HttpWorkQueue->push(HTTP_MSG_POST_ENTRANCE);
       } else {
           // trigger barrier directly
           
@@ -77,7 +74,7 @@ void VehicleDetection::ExitTimerCallback(int signum) {
 
    if (bOnLoop) {
       if( !Settings::PLCWorksAutonomously()) {
-          HttpWorkQueue->push(HTTP_MSG_POST_EXIT);
+          //HttpWorkQueue->push(HTTP_MSG_POST_EXIT);
       } else {
           // send message to barrier thread
       }

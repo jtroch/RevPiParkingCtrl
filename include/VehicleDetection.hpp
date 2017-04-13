@@ -1,5 +1,4 @@
 #include <onposix/AbstractThread.hpp>
-#include <onposix/PosixSharedQueue.hpp>
 
 #include "RevPiParkingCtrl.hpp"
 #include "IOHandler.hpp"
@@ -9,7 +8,6 @@ using namespace onposix;
 
 class VehicleDetection : public AbstractThread { 
     private: 
-        PosixSharedQueue<HttpMsgType> * HttpWorkQueue;
         struct itimerval EntranceTimer;
         struct itimerval ExitTimer;
         void FireEntranceTimer();
@@ -18,7 +16,7 @@ class VehicleDetection : public AbstractThread {
         void ExitTimerCallback(int signum);
 
     public:
-        VehicleDetection(PosixSharedQueue<HttpMsgType> * queue);
+        VehicleDetection();
         ~VehicleDetection() {};
         void run();
 };

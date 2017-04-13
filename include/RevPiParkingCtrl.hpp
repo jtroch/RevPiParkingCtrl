@@ -13,6 +13,10 @@
 //#define LOG_LEVEL_FILE  LOG_ERRORS
 //#define LOG_LEVEL_FILE  LOG_ALL
 
+#define SERVER_ADDRESS "http://192.168.1.145"
+#define BASE_API_PATH  "/api.domain.com/"
+
+
 #define SETTINGS_UPDATE_INTERVAL 1000000
 
 enum HttpMsgType {

@@ -1,5 +1,4 @@
 #include <syslog.h>
-
 #include "RevPiParkingCtrl.hpp"
 #include "ThreadSynchronization.hpp"
 #include "IOHandler.hpp"
@@ -15,12 +14,9 @@ int  Settings::BarrierPulseLength=1000;
 int  Settings::TestOutput=0;
 
 
-Settings::Settings(PosixSharedQueue<HttpMsgType> * queue) {
-    // Work-queue
-    HttpWorkQueue = queue;
-
+Settings::Settings() {
     // get a connection object
-    HttpConnection = new RestClient::Connection("http://192.168.1.110");
+    HttpConnection = new RestClient::Connection(SERVER_ADDRESS);
 }
 
 void Settings::Update(

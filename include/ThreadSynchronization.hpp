@@ -9,6 +9,7 @@ private:
     PosixMutex SerialMutex;
     PosixMutex SettingsMutex;
     PosixMutex IOMutex;
+    PosixMutex IdKeyMutex;
 
     static ThreadSynchronization * instance;
     ThreadSynchronization() {};
@@ -24,4 +25,6 @@ public:
     void RxTxSemaphoreGive();
     void LockIO();
     void UnlockIO();
+    void LockIdKey();
+    void UnlockIdKey();
 };

@@ -9,7 +9,7 @@ using namespace onposix;
 
 class Settings : public AbstractThread {
 private:
-    PosixSharedQueue<HttpMsgType> * HttpWorkQueue;
+    RestClient::Connection* HttpConnection;
 
     static bool EntranceBarrierContinuouslyOpen;
     static bool ExitBarrierContinuouslyOpen;
@@ -18,11 +18,9 @@ private:
     static int  HttpReplyTimeout;
     static int  BarrierPulseLength;
     static int  TestOutput;
-
-    RestClient::Connection* HttpConnection;
-
+    
 public:
-    Settings(PosixSharedQueue<HttpMsgType> * queue);
+    Settings();
     void run();
 
     static void Update(

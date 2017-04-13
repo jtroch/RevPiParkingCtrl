@@ -30,6 +30,14 @@ void ThreadSynchronization::UnlockIO() {
     IOMutex.unlock();
 }
 
+void ThreadSynchronization::LockIdKey() {
+    IdKeyMutex.lock();
+}
+
+void ThreadSynchronization::UnlockIdKey() {
+    IdKeyMutex.unlock();
+}
+
 ThreadSynchronization * ThreadSynchronization::getInstance() {
     pthread_mutex_lock(&SynchroMutex);
     if (instance == NULL) {
