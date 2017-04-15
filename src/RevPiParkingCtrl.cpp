@@ -18,13 +18,8 @@
 #include "LedAnimation.hpp"
 #include "Settings.hpp"
 #include "Authentication.hpp"
-
-/*
-#include "VehicleDetection.hpp"
+#include "LoopDetection.hpp"
 #include "Barrier.hpp"
-#include "Authentication.hpp"
-#include "NetworkHandler.hpp"
-*/
 
 int main()
 {
@@ -32,18 +27,15 @@ int main()
     
     // initialize RestClient
     RestClient::init();
-
-    /*
-    Authentication authentication = new Authentication(httpWorkQueue);
-    VehicleDetection vehicleDetection = new VehicleDetection(httpWorkQueue);
-    NetworkHandler networkHandler = new NetworkHandler(httpWorkQueue);
-    Barrier entranceBarrier = new Barrier(ENTRANCE_BARRIER);
-    Barrier exitBarrier = new Barrier(EXIT_BARRIER);
-    */
     
     LedAnimation ledAnimation;
     Settings settings;
     Authentication authentication;
+    LoopDetection loopDetectionEntrance(ENTRANCE);
+    LoopDetection loopDetectionExit(EXIT);
+    Barrier entranceBarrier(ENTRANCE);
+    Barrier exitBarrier(EXIT);
+
     
     std::cout << "-------------------------------------------------------" << std::endl;
     std::cout << "                    Parking PLC                        " << std::endl;
@@ -55,33 +47,26 @@ int main()
     syslog(LOG_DEBUG, "-----------------   Parking PLC ------------------");
     syslog(LOG_DEBUG, "--------------------------------------------------");
 
+    ledAnimation.start();
+
+    std::cout << "Starting Athentication ..." << std::endl;
     syslog(LOG_DEBUG, "Starting Authentication ..");
-
-    //syslog(LOG_WARNING, "Dit is een warning");
-    //syslog(LOG_ERR, "Dit is een error");
-
     authentication.start();
     // wait for authentication to finish before going on
     authentication.waitForTermination();
+    std::cout << "Finished, starting all other thtreads.." << std::endl;
 
-    ledAnimation.start();
     settings.start();
-    
+    loopDetectionEntrance.start();
+    entranceBarrier.start();
 
+    //loopDetectionExit.start();
+    //exitBarrier.start();
+    
     ledAnimation.waitForTermination();
     settings.waitForTermination();
-
-    // Start authentication and wait for completion before starting other tasks
-    /*
-    authentication.start();
-    authentication.waitForTermination();
-
-    settings.start();
-    vehicleDetection.start();
-    networkHandler.start();
-    entranceBarrier.start();
-    exitBarrier.start();
-    */
+    loopDetectionEntrance.waitForTermination();
+    entranceBarrier.waitForTermination();
 
     return 0;
 }

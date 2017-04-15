@@ -26,9 +26,9 @@ enum HttpMsgType {
     HTTP_MSG_POST_EXIT
 };
 
-enum BarrierType {
-    ENTRANCE_BARRIER,
-    EXIT_BARRIER
+enum GateType {
+    ENTRANCE,
+    EXIT
 };
 
 #endif

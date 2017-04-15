@@ -5,6 +5,7 @@
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 
+#include "RevPiParkingCtrl.hpp"
 #include "HttpThread.hpp"
 
 using namespace onposix;
@@ -35,7 +36,7 @@ public:
         int TestOutput
     );
     static bool PLCWorksAutonomously();
-    static bool BarrierContinuouslyOpen(BarrierType type);
+    static bool BarrierContinuouslyOpen(GateType type);
     static int  GetDetectionLoopTimeout();
     static int  GetHttpReplyTimeout();
     static int  GetBarrierPulseLength();

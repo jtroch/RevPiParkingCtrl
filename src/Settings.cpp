@@ -61,16 +61,16 @@ bool Settings::PLCWorksAutonomously() {
     return ret;
 }
 
-bool Settings::BarrierContinuouslyOpen(BarrierType type) {
+bool Settings::BarrierContinuouslyOpen(GateType type) {
     int externalHWsetting=0;
     bool ret=false;
 
     ThreadSynchronization::getInstance()->LockSettings();
     switch (type) {
-        case ENTRANCE_BARRIER:
+        case ENTRANCE:
             externalHWsetting = IOHandler::getInstance()->GetIO("EntranceBarrierContinuouslyOpen");  
             if ( (externalHWsetting==1) || EntranceBarrierContinuouslyOpen) ret=true;
-        case EXIT_BARRIER:
+        case EXIT:
             externalHWsetting = IOHandler::getInstance()->GetIO("ExitBarrierContinuouslyOpen");  
             if ( (externalHWsetting==1) || ExitBarrierContinuouslyOpen) ret=true;
     }

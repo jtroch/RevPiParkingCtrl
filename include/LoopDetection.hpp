@@ -5,19 +5,18 @@
 
 using namespace onposix;
 
-class Barrier : public HttpThread { 
+class LoopDetection : public HttpThread { 
     private: 
-        struct itimerval Timer;
-        GateType barrier;
-        bool OpenBarrier;
-        void FireTimer();
-        void SetBarrier(int value);
+        GateType loop;
+        struct itimerval timer;
+        void fireTimer();
+        void timerCallback(int signum);
 
         int ParseResponse(RestClient::Response response);
         int HandleRequest();
-        
+
     public:
-        Barrier(Gatetype type);
-        ~Barrier();
+        LoopDetection(GateType type);
+        ~LoopDetection() {};
         void run();
 };

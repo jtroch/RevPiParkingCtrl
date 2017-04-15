@@ -53,15 +53,15 @@ int Authentication::ParseResponse(RestClient::Response response) {
     
     if (parsingSuccessful)
     {
-        if (id=root.get("id" , 0).asInt()==0) { // defaults to 0 if not found in body
+        if ((id=root.get("id" , 0).asInt())==0) { // defaults to 0 if not found in body
             syslog(LOG_DEBUG, "AUTHENTICATION: id' not found in response");
             return 0;
         } 
-        if (id=root.get("key" , 0).asInt()==0) { // defaults to 0 if not found in body
+        if ((key=root.get("key" , 0).asInt())==0) { // defaults to 0 if not found in body
             syslog(LOG_DEBUG, "AUTHENTICATION: key not found in response");
             return 0;
-        }       
-        syslog(LOG_DEBUG, "AUTHENTICATION: receive Id:%i Key:%i", id, key);
+        }    
+        syslog(LOG_DEBUG, "AUTHENTICATION: receive id:%i key:%i", id, key);
     } else {
         syslog(LOG_DEBUG, "AUTHENTICATION: parsing failed");
         return 0;
