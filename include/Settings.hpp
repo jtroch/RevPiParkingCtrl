@@ -5,12 +5,12 @@
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 
+#include "HttpThread.hpp"
+
 using namespace onposix;
 
-class Settings : public AbstractThread {
+class Settings : public HttpThread {
 private:
-    RestClient::Connection* HttpConnection;
-
     static bool EntranceBarrierContinuouslyOpen;
     static bool ExitBarrierContinuouslyOpen;
     static bool PLCWorksAuto;
@@ -18,7 +18,9 @@ private:
     static int  HttpReplyTimeout;
     static int  BarrierPulseLength;
     static int  TestOutput;
-    
+
+    int ParseResponse(RestClient::Response response);
+    int HandleRequest();  
 public:
     Settings();
     void run();

@@ -1,12 +1,11 @@
-#include <onposix/AbstractThread.hpp>
+#include <restclient-cpp/connection.h>
+#include <restclient-cpp/restclient.h>
 
-#include "RevPiParkingCtrl.hpp"
-#include "IOHandler.hpp"
-#include "Settings.hpp"
+#include "HttpThread.hpp"
 
 using namespace onposix;
 
-class VehicleDetection : public AbstractThread { 
+class VehicleDetection : public HttpThread { 
     private: 
         struct itimerval EntranceTimer;
         struct itimerval ExitTimer;
@@ -14,6 +13,9 @@ class VehicleDetection : public AbstractThread {
         void FireExitTimer();
         void EntranceTimerCallback(int signum);
         void ExitTimerCallback(int signum);
+
+        int ParseResponse(RestClient::Response response);
+        int HandleRequest();
 
     public:
         VehicleDetection();

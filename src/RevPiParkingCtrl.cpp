@@ -42,7 +42,7 @@ int main()
     */
     
     LedAnimation ledAnimation;
-    Settings settings();
+    Settings settings;
     Authentication authentication;
     
     std::cout << "-------------------------------------------------------" << std::endl;
@@ -61,7 +61,8 @@ int main()
     //syslog(LOG_ERR, "Dit is een error");
 
     authentication.start();
-    //authentication.waitForTermination();
+    // wait for authentication to finish before going on
+    authentication.waitForTermination();
 
     ledAnimation.start();
     settings.start();

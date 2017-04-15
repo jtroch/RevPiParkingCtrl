@@ -3,7 +3,6 @@
 #include "ThreadSynchronization.hpp"
 #include "IOHandler.hpp"
 #include "Settings.hpp"
-#include "Http.hpp"
 
 bool Settings::EntranceBarrierContinuouslyOpen=false;
 bool Settings::ExitBarrierContinuouslyOpen=false;
@@ -15,8 +14,15 @@ int  Settings::TestOutput=0;
 
 
 Settings::Settings() {
-    // get a connection object
-    HttpConnection = new RestClient::Connection(SERVER_ADDRESS);
+    // parent class constructor is automatically called
+}
+
+int Settings::HandleRequest() {
+    return 0;
+}
+
+int Settings::ParseResponse(RestClient::Response response) {
+    return 0;
 }
 
 void Settings::Update(
@@ -97,7 +103,7 @@ void Settings::run() {
     
     while(1)  {
         syslog(LOG_DEBUG, "SETTINGS: sending GET request");
-        Http::HandleRequest(HttpConnection, HTTP_MSG_GET_SETTINGS);
+        HandleRequest();
         
         usleep(5000000); 
     }

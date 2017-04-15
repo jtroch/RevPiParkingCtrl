@@ -7,11 +7,17 @@
 #include <syslog.h>
 #include <sys/time.h>
 
+#include <restclient-cpp/connection.h>
+#include <restclient-cpp/restclient.h>
+
 #include "VehicleDetection.hpp"
+#include "HttpThread.hpp"
 
 using namespace onposix;
 
 VehicleDetection::VehicleDetection() {
+    // parent class constructor is automatically called
+
     // Configure timers
     struct sigaction sa_entrance, sa_exit;
     
@@ -24,6 +30,14 @@ VehicleDetection::VehicleDetection() {
     memset (&sa_exit, 0, sizeof (sa_exit));
     //sa_exit.sa_handler = &ExitTimerCallback;
     sigaction (SIGVTALRM, &sa_exit, NULL); 
+}
+
+int VehicleDetection::HandleRequest() {
+    return 0;
+}
+
+int VehicleDetection::ParseResponse(RestClient::Response response) {
+    return 0;
 }
 
 void VehicleDetection::FireEntranceTimer() {
@@ -51,16 +65,17 @@ void VehicleDetection::FireExitTimer() {
 // Callback, called when timer of entry loop ends
 // Time during which vehicle should be on entry loop
 void VehicleDetection::EntranceTimerCallback(int signum) {
-   uint8_t bOnLoop;
+    uint8_t bOnLoop;
 
-   bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopActive");
-   if (bOnLoop) {
-      if( !Settings::PLCWorksAutonomously()) {    
-         // HttpWorkQueue->push(HTTP_MSG_POST_ENTRANCE);
-      } else {
-          // trigger barrier directly
+    bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopActive");
+    if (bOnLoop) {
+        if( !Settings::PLCWorksAutonomously()) {    
+            syslog(LOG_DEBUG, "VEHICLE_DETECTION: sending POST request /entrance");
+            HandleRequest();
+        } else {
+            // trigger barrier directly
           
-      }
+        }
    }
 }
 
@@ -73,11 +88,12 @@ void VehicleDetection::ExitTimerCallback(int signum) {
    bOnLoop = IOHandler::getInstance()->GetIO("ExitLoopActive");
 
    if (bOnLoop) {
-      if( !Settings::PLCWorksAutonomously()) {
-          //HttpWorkQueue->push(HTTP_MSG_POST_EXIT);
-      } else {
-          // send message to barrier thread
-      }
+        if( !Settings::PLCWorksAutonomously()) {
+            syslog(LOG_DEBUG, "VEHICLE_DETECTION: sending POST request /exit");
+            HandleRequest();
+        } else {
+            // send message to barrier thread
+        }
    }
 }
 
