@@ -27,7 +27,7 @@ Barrier::Barrier(GateType type) {
     
     /* Install timer handler for entrance barrier */
     memset (&sa, 0, sizeof (sa));
-    sa.sa_handler = &TimerCallback;
+    //sa.sa_handler = &timerCallback;
     sigaction (SIGVTALRM, &sa, NULL);
 }
 
@@ -39,18 +39,18 @@ int Barrier::ParseResponse(RestClient::Response response) {
     return 0;
 }
 
-void Barrier::SetBarrier(int value)  {
-    switch (type) {
+void Barrier::setBarrier(int value)  {
+    switch (barrier) {
         case ENTRANCE:
-            IOHandler::getInstance->SetIO("EntranceBarrier", value);
+            //IOHandler::getInstance()->SetIO("OpenEntrance", value);
             break;
         case EXIT:
-            IOHandler::getInstance->SteIO("ExitBarrier", value);
+            //IOHandler::getInstance()->SetIO("OpenExit", value);
             break;
     }
 }
 
-void Barrier::FireTimer() {
+void Barrier::fireTimer() {
 
     /* Configure the timers to expire after .... msec. (and no repeat) */
     Timer.it_value.tv_sec = 0;
@@ -62,32 +62,32 @@ void Barrier::FireTimer() {
 }
 
 // Callback, called when timer ends
-void Barrier::TimerCallback(int signum) {
+void Barrier::timerCallback(int signum) {
    
     if (!Settings::BarrierContinuouslyOpen(barrier)) // do not close if set to be continuously open bij HW pin
     {
         // close barrier (= actualy don't drive open anymore')
-        SetBarrier(0);
+        setBarrier(0);
     }
 }
 
-void Barriers::run() {
-    
+void Barrier::run() {
     
     while(1)  {
         
         // wait for trigger by Http thread
+        /*
         if (...) {
             // open barrier 
             SetBarrier(1);
             FireTimer();
-        }
+        }*/
 
         if (Settings::BarrierContinuouslyOpen(barrier)) {
-            SetBarrier(1);
+            setBarrier(1);
         }
 
         usleep(SETTINGS_UPDATE_INTERVAL); 
     }
-    return NULL;
+    return;
 }

@@ -14,6 +14,8 @@ class LoopDetection : public HttpThread {
 
         int ParseResponse(RestClient::Response response);
         int HandleRequest();
+        std::string url;
+        std::string body;
 
     public:
         LoopDetection(GateType type);

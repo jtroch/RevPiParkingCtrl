@@ -20,11 +20,13 @@
 #include "Authentication.hpp"
 #include "LoopDetection.hpp"
 #include "Barrier.hpp"
+#include "IOHandler.hpp"
+
+#include <piControlIf.hpp>
+#include <piControl.h>
 
 int main()
 {
-    //PosixSharedQueue<HttpMsgType> * httpWorkQueue = new PosixSharedQueue<HttpMsgType>();
-    
     // initialize RestClient
     RestClient::init();
     
@@ -54,19 +56,30 @@ int main()
     authentication.start();
     // wait for authentication to finish before going on
     authentication.waitForTermination();
+
+    syslog(LOG_DEBUG, "Checking all IOs ..");
+    syslog(LOG_DEBUG, "EntranceLoopAct: %i",  IOHandler::getInstance()->GetIO("EntranceLoopAct"));
+    syslog(LOG_DEBUG, "ExitLoopAct    : %i",  IOHandler::getInstance()->GetIO("ExitLoopAct"));
+    syslog(LOG_DEBUG, "EntranceCO     : %i",  IOHandler::getInstance()->GetIO("EntranceCO"));
+    syslog(LOG_DEBUG, "ExitCO         : %i",  IOHandler::getInstance()->GetIO("ExitCO"));
+    syslog(LOG_DEBUG, "PLCAuto        : %i",  IOHandler::getInstance()->GetIO("PLCAuto"));
+    syslog(LOG_DEBUG, "OpenEntrance   :   "); IOHandler::getInstance()->SetIO("OpenEntrance", 1);
+    syslog(LOG_DEBUG, "OpenExit       :   "); IOHandler::getInstance()->SetIO("OpenExit", 1);
+    syslog(LOG_DEBUG, "TestOutput     :   "); IOHandler::getInstance()->SetIO("TestOutput", 1);
+
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 
     settings.start();
     loopDetectionEntrance.start();
-    entranceBarrier.start();
+    //entranceBarrier.start();
 
     //loopDetectionExit.start();
     //exitBarrier.start();
     
     ledAnimation.waitForTermination();
     settings.waitForTermination();
-    loopDetectionEntrance.waitForTermination();
-    entranceBarrier.waitForTermination();
+    //loopDetectionEntrance.waitForTermination();
+    //entranceBarrier.waitForTermination();
 
     return 0;
 }

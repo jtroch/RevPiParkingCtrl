@@ -12,32 +12,35 @@ using namespace onposix;
 
 class Settings : public HttpThread {
 private:
-    static bool EntranceBarrierContinuouslyOpen;
-    static bool ExitBarrierContinuouslyOpen;
-    static bool PLCWorksAuto;
-    static int  DetectionLoopTimeout;
-    static int  HttpReplyTimeout;
+    static bool EntranceCO;
+    static bool ExitCO;
+    static bool PLCAuto;
+    static int  LoopTimeout;
+    static int  HttpTimeout;
     static int  BarrierPulseLength;
-    static int  TestOutput;
+    static bool TestOutput;
 
     int ParseResponse(RestClient::Response response);
     int HandleRequest();  
+    std::string url;
+    
 public:
     Settings();
     void run();
 
     static void Update(
-        bool EntranceBarrierContinuouslyOpen,
-        bool ExitBarrierContinuouslyOpen,
-        bool PLCWorksAuto,
-        int DetectionLoopTimeout,
-        int HttpReplyTimeout,
-        int BarrierPulseLength,
-        int TestOutput
+        bool entranceCO,
+        bool exitCO,
+        bool PLCAuto,
+        int  loopTimeout,
+        int  httpTimeout,
+        int  barrierPulseLength,
+        bool testOutput
     );
     static bool PLCWorksAutonomously();
     static bool BarrierContinuouslyOpen(GateType type);
-    static int  GetDetectionLoopTimeout();
-    static int  GetHttpReplyTimeout();
+
+    static int  GetLoopTimeout();
+    static int  GetHttpTimeout();
     static int  GetBarrierPulseLength();
 };

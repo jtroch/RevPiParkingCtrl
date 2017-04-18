@@ -14,7 +14,7 @@
 //#define LOG_LEVEL_FILE  LOG_ALL
 
 #define SERVER_ADDRESS "http://192.168.1.110"
-#define BASE_API_PATH  "/api.domain.com/"
+#define BASE_API_PATH  "/api.imber.nu/client/"
 
 
 #define SETTINGS_UPDATE_INTERVAL 1000000

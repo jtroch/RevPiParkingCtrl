@@ -10,14 +10,15 @@ class Barrier : public HttpThread {
         struct itimerval Timer;
         GateType barrier;
         bool OpenBarrier;
-        void FireTimer();
-        void SetBarrier(int value);
+        void fireTimer();
+        void setBarrier(int value);
+        void timerCallback(int signum);
 
         int ParseResponse(RestClient::Response response);
         int HandleRequest();
         
     public:
-        Barrier(Gatetype type);
-        ~Barrier();
+        Barrier(GateType type);
+        ~Barrier() {};
         void run();
 };
