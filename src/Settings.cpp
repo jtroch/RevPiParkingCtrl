@@ -194,7 +194,7 @@ void Settings::run() {
         syslog(LOG_DEBUG, "SETTINGS: sending GET request");
         HandleRequest();
         
-        usleep(5000000); 
+        usleep(10000000); 
     }
     return;
 }

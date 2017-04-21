@@ -85,7 +85,7 @@ void Authentication::Update(int id, int key) {
 int Authentication::GetId() {
     int id;
     // Critical section
-   ThreadSynchronization::getInstance()->LockIdKey();
+    ThreadSynchronization::getInstance()->LockIdKey();
     id = Id;
     // End critical section
     ThreadSynchronization::getInstance()->UnlockIdKey();

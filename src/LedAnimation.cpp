@@ -6,6 +6,7 @@
 #include <syslog.h>
 
 #include <onposix/AbstractThread.hpp>
+#include "ThreadSynchronization.hpp"
 #include "RevPiParkingCtrl.hpp"
 #include "LedAnimation.hpp"
 #include "piControlIf.hpp"
@@ -23,7 +24,9 @@ void LedAnimation::run() {
     piControl piCtrl;
 
     while (1)  {    
+        ThreadSynchronization::getInstance()->LockIO();
         piCtrl.Write(72, 1, &ledvalue);
+        ThreadSynchronization::getInstance()->UnlockIO();
         newledvalue = (ledvalue << 1) | (ledvalue >> 3); // rotate left
         ledvalue = newledvalue;
 

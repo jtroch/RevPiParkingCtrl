@@ -41,19 +41,19 @@ int IOHandler::GetIO(const char* pszVariableName) {
         switch (sPiVariable.i16uLength) {
             case 1: 
                 rc = piCtrl.GetBitValue(&sPIValue);
-                syslog(LOG_DEBUG, "IOHandler: Get bit value: %d\n", sPIValue.i8uValue);
+                //syslog(LOG_DEBUG, "IOHandler: Get bit value: %d\n", sPIValue.i8uValue);
                 break;
             case 8: 
                 rc = piCtrl.Read(sPiVariable.i16uAddress, 1, (uint8_t*)&i8uValue);
-                syslog(LOG_DEBUG, "IOHandler: Get u8 value: %d\n", sPIValue.i8uValue);
+                //syslog(LOG_DEBUG, "IOHandler: Get u8 value: %d\n", sPIValue.i8uValue);
                 break;
             case 16:
                 rc = piCtrl.Read(sPiVariable.i16uAddress, 2, (uint8_t*)&i16uValue);
-                syslog(LOG_DEBUG, "IOHandler: Value of %s: %04x hex (=%d dez)\n", pszVariableName, i16uValue, i16uValue);
+                //syslog(LOG_DEBUG, "IOHandler: Value of %s: %04x hex (=%d dez)\n", pszVariableName, i16uValue, i16uValue);
                 break;
             case 32:
                 rc = piCtrl.Read(sPiVariable.i16uAddress, 4, (uint8_t*)&i32uValue);
-                syslog(LOG_DEBUG, "IOHandler: Value of %s: %08x hex (=%d dez)\n", pszVariableName, i32uValue, i32uValue);
+                //syslog(LOG_DEBUG, "IOHandler: Value of %s: %08x hex (=%d dez)\n", pszVariableName, i32uValue, i32uValue);
                 break;
         }
         usleep(10000);
@@ -81,7 +81,7 @@ int IOHandler::SetIO(const char* pszVariableName, uint32_t value) {
         ThreadSynchronization::getInstance()->UnlockIO();
         return -1;
     } else {
-        syslog(LOG_DEBUG, "IOHandler: SetIO(%s) [offset=%d length=%d bit=%d]\n", sPiVariable.strVarName, sPiVariable.i16uAddress, sPiVariable.i16uLength, sPiVariable.i8uBit);
+        syslog(LOG_DEBUG, "IOHandler: SetIO(%s) [offset=%d length=%d bit=%d value=%d]\n", sPiVariable.strVarName, sPiVariable.i16uAddress, sPiVariable.i16uLength, sPiVariable.i8uBit, value);
     }
     sPIValue.i16uAddress = sPiVariable.i16uAddress;
     sPIValue.i8uBit = sPiVariable.i8uBit;
@@ -90,18 +90,18 @@ int IOHandler::SetIO(const char* pszVariableName, uint32_t value) {
     switch (sPiVariable.i16uLength) {
         case 1: 
             rc = piCtrl.Write(sPiVariable.i16uAddress, 1, (uint8_t *)&value);
-            if (rc > 0) syslog(LOG_DEBUG, "IOHandler: Set bit %d on byte at offset %d. Value %d\n", sPIValue.i8uBit, sPIValue.i16uAddress, sPIValue.i8uValue);
+            //if (rc > 0) syslog(LOG_DEBUG, "IOHandler: Set bit %d on byte at offset %d. Value %d\n", sPIValue.i8uBit, sPIValue.i16uAddress, sPIValue.i8uValue);
         case 8: 
             rc = piCtrl.Write(sPiVariable.i16uAddress, 1, (uint8_t *)&value);
-            if (rc > 0) syslog(LOG_DEBUG, "IOHandler: Write value %d dez (=%02x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
+            //if (rc > 0) syslog(LOG_DEBUG, "IOHandler: Write value %d dez (=%02x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
             break;
         case 16:
             rc = piCtrl.Write(sPiVariable.i16uAddress, 2, (uint8_t *)&value);
-            if (rc > 0) syslog(LOG_DEBUG, "IOHandler: Write value %d dez (=%02x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
+            //if (rc > 0) syslog(LOG_DEBUG, "IOHandler: Write value %d dez (=%02x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
             break;
         case 32:
             rc = piCtrl.Write(sPiVariable.i16uAddress, 4, (uint8_t *)&value);
-            if (rc > 0) syslog(LOG_DEBUG, "I: OHandlerWrite value %d dez (=%04x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
+            //if (rc > 0) syslog(LOG_DEBUG, "I: OHandlerWrite value %d dez (=%04x hex) to offset %d.\n", value, value, sPiVariable.i16uAddress);
             break;
     }
     ThreadSynchronization::getInstance()->UnlockIO();

@@ -31,12 +31,9 @@ int main()
     RestClient::init();
     
     LedAnimation ledAnimation;
-    Settings settings;
     Authentication authentication;
-    LoopDetection loopDetectionEntrance(ENTRANCE);
-    LoopDetection loopDetectionExit(EXIT);
-    Barrier entranceBarrier(ENTRANCE);
-    Barrier exitBarrier(EXIT);
+
+    
 
     
     std::cout << "-------------------------------------------------------" << std::endl;
@@ -57,6 +54,12 @@ int main()
     // wait for authentication to finish before going on
     authentication.waitForTermination();
 
+    Settings settings;
+    LoopDetection loopDetectionEntrance(ENTRANCE);
+    LoopDetection loopDetectionExit(EXIT);
+    Barrier entranceBarrier(ENTRANCE);
+    Barrier exitBarrier(EXIT);
+
     syslog(LOG_DEBUG, "Checking all IOs ..");
     syslog(LOG_DEBUG, "EntranceLoopAct: %i",  IOHandler::getInstance()->GetIO("EntranceLoopAct"));
     syslog(LOG_DEBUG, "ExitLoopAct    : %i",  IOHandler::getInstance()->GetIO("ExitLoopAct"));
@@ -70,7 +73,7 @@ int main()
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 
     settings.start();
-    loopDetectionEntrance.start();
+    //loopDetectionEntrance.start();
     //entranceBarrier.start();
 
     //loopDetectionExit.start();

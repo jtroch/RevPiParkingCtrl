@@ -1,11 +1,13 @@
+#include <onposix/AbstractThread.hpp>
+
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 
-#include "HttpThread.hpp"
+#include "RevPiParkingCtrl.hpp"
 
 using namespace onposix;
 
-class Barrier : public HttpThread { 
+class Barrier : public AbstractThread { 
     private: 
         struct itimerval Timer;
         GateType barrier;
@@ -13,9 +15,6 @@ class Barrier : public HttpThread {
         void fireTimer();
         void setBarrier(int value);
         void timerCallback(int signum);
-
-        int ParseResponse(RestClient::Response response);
-        int HandleRequest();
         
     public:
         Barrier(GateType type);

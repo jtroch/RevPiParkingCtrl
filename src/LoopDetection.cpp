@@ -66,7 +66,7 @@ void LoopDetection::fireTimer() {
 
     /* Configure the timers to expire after .... msec. (and no repeat) */
     timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = Settings::GetLoopTimeout();
+    timer.it_value.tv_usec = Settings::GetLoopTimeout() * 1000;
     timer.it_interval.tv_sec = 0;
     timer.it_interval.tv_usec = 0;
 
@@ -96,7 +96,7 @@ void LoopDetection::run() {
     bool GotApiIdKey=true;
     
     while(1)  {
-        bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopAct");
+        //bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopAct");
 
         // entry loop
         if (bOnLoop && !bWasOnLoop) { // rising edge detection
@@ -107,7 +107,7 @@ void LoopDetection::run() {
             bWasOnLoop = false;
         }
     
-        usleep(100000); 
+        usleep(1000000); 
     }
     return;
 }
