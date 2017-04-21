@@ -5,7 +5,6 @@ using namespace onposix;
 
 class LedAnimation: public AbstractThread { 
     private: 
-        //IOHandler IOhandler;
 
     public:
         LedAnimation();

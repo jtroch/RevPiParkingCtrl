@@ -13,7 +13,7 @@ class Barrier : public AbstractThread {
         GateType barrier;
         bool OpenBarrier;
         void fireTimer();
-        void setBarrier(int value);
+        void setBarrier(bool on);
         void timerCallback(int signum);
         
     public:

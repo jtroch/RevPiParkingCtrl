@@ -1,3 +1,5 @@
+#include <syslog.h>
+
 #include "ThreadSynchronization.hpp"
 
 using namespace onposix;
@@ -23,10 +25,12 @@ void ThreadSynchronization::UnlockSerial() {
 }
 
 void ThreadSynchronization::LockIO() {
+    syslog(LOG_DEBUG, "IO LOCK");
     IOMutex.lock();
 }
 
 void ThreadSynchronization::UnlockIO() {
+    syslog(LOG_DEBUG, "IO UNLOCK");
     IOMutex.unlock();
 }
 

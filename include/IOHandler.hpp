@@ -11,5 +11,5 @@ class IOHandler {
     public:
         static IOHandler * getInstance();
         int GetIO(const char* name);
-        int SetIO(const char* name, uint32_t value);
+        int SetIO(const char* name, bool on);
 };  

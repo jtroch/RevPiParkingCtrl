@@ -109,8 +109,7 @@ int Settings::ParseResponse(RestClient::Response response) {
                 syslog(LOG_DEBUG, "SETTINGS: parameter 'test-output' not found in response");
             } else {
                 TestOutput=root.get("test-output", false).asBool();
-                if (TestOutput) IOHandler::getInstance()->SetIO("TestOutput", 1);
-                else IOHandler::getInstance()->SetIO("TestOutput", 0);
+                IOHandler::getInstance()->SetIO("TestOutput", TestOutput);
             }
             
             // End critical section

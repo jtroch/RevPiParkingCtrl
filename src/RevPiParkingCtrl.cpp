@@ -25,16 +25,19 @@
 #include <piControlIf.hpp>
 #include <piControl.h>
 
+using namespace onposix;
+
+PosixMutex IOMutex;
+
 int main()
 {
     // initialize RestClient
     RestClient::init();
+
+    PosixMutex IOMutex;
     
     LedAnimation ledAnimation;
     Authentication authentication;
-
-    
-
     
     std::cout << "-------------------------------------------------------" << std::endl;
     std::cout << "                    Parking PLC                        " << std::endl;
@@ -62,25 +65,25 @@ int main()
 
     syslog(LOG_DEBUG, "Checking all IOs ..");
     syslog(LOG_DEBUG, "EntranceLoopAct: %i",  IOHandler::getInstance()->GetIO("EntranceLoopAct"));
-    syslog(LOG_DEBUG, "ExitLoopAct    : %i",  IOHandler::getInstance()->GetIO("ExitLoopAct"));
-    syslog(LOG_DEBUG, "EntranceCO     : %i",  IOHandler::getInstance()->GetIO("EntranceCO"));
-    syslog(LOG_DEBUG, "ExitCO         : %i",  IOHandler::getInstance()->GetIO("ExitCO"));
-    syslog(LOG_DEBUG, "PLCAuto        : %i",  IOHandler::getInstance()->GetIO("PLCAuto"));
-    syslog(LOG_DEBUG, "OpenEntrance   :   "); IOHandler::getInstance()->SetIO("OpenEntrance", 1);
-    syslog(LOG_DEBUG, "OpenExit       :   "); IOHandler::getInstance()->SetIO("OpenExit", 1);
-    syslog(LOG_DEBUG, "TestOutput     :   "); IOHandler::getInstance()->SetIO("TestOutput", 1);
+    //syslog(LOG_DEBUG, "ExitLoopAct    : %i",  IOHandler::getInstance()->GetIO("ExitLoopAct"));
+    //syslog(LOG_DEBUG, "EntranceCO     : %i",  IOHandler::getInstance()->GetIO("EntranceCO"));
+    //syslog(LOG_DEBUG, "ExitCO         : %i",  IOHandler::getInstance()->GetIO("ExitCO"));
+    //syslog(LOG_DEBUG, "PLCAuto        : %i",  IOHandler::getInstance()->GetIO("PLCAuto"));
+    //syslog(LOG_DEBUG, "OpenEntrance   :   "); IOHandler::getInstance()->SetIO("OpenEntrance", 1);
+    //syslog(LOG_DEBUG, "OpenExit       :   "); IOHandler::getInstance()->SetIO("OpenExit", 1);
+    //syslog(LOG_DEBUG, "TestOutput     :   "); IOHandler::getInstance()->SetIO("TestOutput", 1);
 
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 
-    settings.start();
+    //settings.start();
     //loopDetectionEntrance.start();
     //entranceBarrier.start();
 
     //loopDetectionExit.start();
     //exitBarrier.start();
     
-    ledAnimation.waitForTermination();
-    settings.waitForTermination();
+    //ledAnimation.waitForTermination();
+    //settings.waitForTermination();
     //loopDetectionEntrance.waitForTermination();
     //entranceBarrier.waitForTermination();
 

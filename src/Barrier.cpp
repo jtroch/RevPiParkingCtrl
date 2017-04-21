@@ -31,14 +31,14 @@ Barrier::Barrier(GateType type) {
     sigaction (SIGVTALRM, &sa, NULL);
 }
 
-void Barrier::setBarrier(int value)  {
+void Barrier::setBarrier(bool open)  {
     switch (barrier) {
         case ENTRANCE:
             //IOHandler::getInstance()->SetIO("OpenEntrance", value);
-            IOHandler::getInstance()->SetIO("LED1", value);
+            IOHandler::getInstance()->SetIO("LED1", open);
             break;
         case EXIT:
-            IOHandler::getInstance()->SetIO("OpenExit", value);
+            IOHandler::getInstance()->SetIO("OpenExit", open);
             break;
     }
 }
@@ -60,7 +60,7 @@ void Barrier::timerCallback(int signum) {
     if (!Settings::BarrierContinuouslyOpen(barrier)) // do not close if set to be continuously open bij HW pin
     {
         // close barrier (= actualy don't drive open anymore')
-        setBarrier(0);
+        setBarrier(false);
     }
 }
 
@@ -75,20 +75,20 @@ void Barrier::run() {
 
         if (bOnLoop) {
             syslog(LOG_DEBUG, "BARRIER: on loop");
-            setBarrier(1);
+            setBarrier(true);
         } else { 
-            setBarrier(0);
+            setBarrier(false);
         }
 
         /*
         if (...) {
             // open barrier 
-            SetBarrier(1);
+            SetBarrier(true);
             FireTimer();
         }*/
 
         if (Settings::BarrierContinuouslyOpen(barrier)) {
-            setBarrier(1);
+            setBarrier(true);
         }
 
         usleep(1000000); 
