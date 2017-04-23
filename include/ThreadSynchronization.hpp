@@ -1,30 +1,21 @@
-#include <pthread.h>
+#include <sys/sem.h>
+
 #include <onposix/PosixMutex.hpp>
+
+#define MY_SEM_ID 1
 
 using namespace onposix;
 
 class ThreadSynchronization {
-private:
-    static pthread_mutex_t SynchroMutex;
-    PosixMutex SerialMutex;
-    PosixMutex SettingsMutex;
-    PosixMutex IOMutex;
-    PosixMutex IdKeyMutex;
+    public:
+        static PosixMutex SerialMutex;
+        static PosixMutex SettingsMutex;
+        static PosixMutex IOMutex;
+        static PosixMutex IdKeyMutex;
 
-    static ThreadSynchronization * instance;
-    ThreadSynchronization() {};
-
-public:
-    static ThreadSynchronization * getInstance();
-
-    void LockSettings();
-    void UnlockSettings();
-    void LockSerial();
-    void UnlockSerial();
-    void RxTxSemaphoreTake();
-    void RxTxSemaphoreGive();
-    void LockIO();
-    void UnlockIO();
-    void LockIdKey();
-    void UnlockIdKey();
+        static void CreateBarrierSemaphore();
+        static void AcquireBarrierSemaphore();
+        static void ReleaseBarrierSemaphore();
+    private:
+        static int semid;
 };

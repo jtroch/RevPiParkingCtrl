@@ -15,83 +15,46 @@
 #include "IOHandler.hpp"
 #include "HttpThread.hpp"
 #include "Settings.hpp"
+#include "ThreadSynchronization.hpp"
 
 using namespace onposix;
 
 Barrier::Barrier(GateType type) {
-    
     barrier = type;
-
-    // Configure timers
-    struct sigaction sa;
-    
-    /* Install timer handler for entrance barrier */
-    memset (&sa, 0, sizeof (sa));
-    //sa.sa_handler = &timerCallback;
-    sigaction (SIGVTALRM, &sa, NULL);
 }
 
 void Barrier::setBarrier(bool open)  {
     switch (barrier) {
         case ENTRANCE:
-            //IOHandler::getInstance()->SetIO("OpenEntrance", value);
-            IOHandler::getInstance()->SetIO("LED1", open);
+            IOHandler::SetIO("OpenEntrance", open);
             break;
         case EXIT:
-            IOHandler::getInstance()->SetIO("OpenExit", open);
+            IOHandler::SetIO("OpenExit", open);
             break;
-    }
-}
-
-void Barrier::fireTimer() {
-
-    /* Configure the timers to expire after .... msec. (and no repeat) */
-    Timer.it_value.tv_sec = 0;
-    Timer.it_value.tv_usec = Settings::GetBarrierPulseLength() * 1000;
-    Timer.it_interval.tv_sec = 0;
-    Timer.it_interval.tv_usec = 0;
-    
-    setitimer(ITIMER_REAL, &Timer, NULL);
-}
-
-// Callback, called when timer ends
-void Barrier::timerCallback(int signum) {
-   
-    if (!Settings::BarrierContinuouslyOpen(barrier)) // do not close if set to be continuously open bij HW pin
-    {
-        // close barrier (= actualy don't drive open anymore')
-        setBarrier(false);
+        case ENTRANCE_EXIT:
+            IOHandler::SetIO("OpenEntrance", open);
+            break;
     }
 }
 
 void Barrier::run() {
-
-    int bOnLoop=0;
     
+    syslog(LOG_DEBUG, "BARRIER: thread started");
+
     while(1)  {
         
-        // wait for trigger
-        bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopAct");
-
-        if (bOnLoop) {
-            syslog(LOG_DEBUG, "BARRIER: on loop");
+        ThreadSynchronization::AcquireBarrierSemaphore();
+        setBarrier(true);
+        syslog(LOG_DEBUG, "BARRIER: opened");
+        usleep(1000000);
+    
+        if (Settings::BarrierContinuouslyOpen(barrier)) {
             setBarrier(true);
-        } else { 
+        } else {
             setBarrier(false);
         }
 
-        /*
-        if (...) {
-            // open barrier 
-            SetBarrier(true);
-            FireTimer();
-        }*/
-
-        if (Settings::BarrierContinuouslyOpen(barrier)) {
-            setBarrier(true);
-        }
-
-        usleep(1000000); 
+        usleep(100000); 
     }
     return;
 }

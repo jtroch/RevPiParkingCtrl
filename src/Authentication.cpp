@@ -75,30 +75,30 @@ int Authentication::ParseResponse(RestClient::Response response) {
 
 void Authentication::Update(int id, int key) {
     // Critical section
-    ThreadSynchronization::getInstance()->LockIdKey();
+    ThreadSynchronization::IdKeyMutex.lock();
     Id=id;
     Key=key;
     // End critical section
-    ThreadSynchronization::getInstance()->UnlockIdKey();
+    ThreadSynchronization::IdKeyMutex.unlock();
 }
 
 int Authentication::GetId() {
     int id;
     // Critical section
-    ThreadSynchronization::getInstance()->LockIdKey();
+    ThreadSynchronization::IdKeyMutex.lock();
     id = Id;
     // End critical section
-    ThreadSynchronization::getInstance()->UnlockIdKey();
+    ThreadSynchronization::IdKeyMutex.unlock();
     return id;
 }
 
  int Authentication::GetKey() {
     int key;
     // Critical section
-    ThreadSynchronization::getInstance()->LockIdKey();
+    ThreadSynchronization::IdKeyMutex.lock();
     key = Key;
     // End critical section
-    ThreadSynchronization::getInstance()->UnlockIdKey();
+    ThreadSynchronization::IdKeyMutex.unlock();
     return key;
 }
 

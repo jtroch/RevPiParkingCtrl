@@ -23,21 +23,19 @@ void LedAnimation::run() {
     uint8_t ledvalue=0x01;
     uint8_t newledvalue=0x00;
 
-    printf("Led animation started\n");
+    syslog(LOG_DEBUG, "LEDANIMATION: thread started");
     piControl piCtrl;
 
     while (1)  {    
-        ThreadSynchronization::getInstance()->LockIO();
-        if ((ledvalue & 0x01)==0x00) IOHandler::getInstance()->SetIO("LED1", false) ; else IOHandler::getInstance()->SetIO("LED1", true);
-        if ((ledvalue & 0x02)==0x00) IOHandler::getInstance()->SetIO("LED2", false) ; else IOHandler::getInstance()->SetIO("LED2", true);
-        if ((ledvalue & 0x04)==0x00) IOHandler::getInstance()->SetIO("LED3", false) ; else IOHandler::getInstance()->SetIO("LED3", true);
-        if ((ledvalue & 0x08)==0x00) IOHandler::getInstance()->SetIO("LED4", false) ; else IOHandler::getInstance()->SetIO("LED4", true);
-        ThreadSynchronization::getInstance()->UnlockIO();
+        if ((ledvalue & 0x01)==0x00) IOHandler::SetIO("LED1", false) ; else IOHandler::SetIO("LED1", true);
+        if ((ledvalue & 0x02)==0x00) IOHandler::SetIO("LED2", false) ; else IOHandler::SetIO("LED2", true);
+        if ((ledvalue & 0x04)==0x00) IOHandler::SetIO("LED3", false) ; else IOHandler::SetIO("LED3", true);
+        if ((ledvalue & 0x08)==0x00) IOHandler::SetIO("LED4", false) ; else IOHandler::SetIO("LED4", true);
 
         newledvalue = (ledvalue << 1) | (ledvalue >> 3); // rotate left
         ledvalue = newledvalue;
 
         syslog(LOG_DEBUG, "Led...");
-        usleep(2000000); 
+        usleep(1000000); 
     }
 }

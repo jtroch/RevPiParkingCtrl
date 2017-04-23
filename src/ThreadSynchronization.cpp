@@ -1,52 +1,53 @@
+#include <stdio.h>
+#include <sys/sem.h>
 #include <syslog.h>
 
 #include "ThreadSynchronization.hpp"
 
 using namespace onposix;
 
-pthread_mutex_t ThreadSynchronization::SynchroMutex = PTHREAD_MUTEX_INITIALIZER;
+PosixMutex ThreadSynchronization::SerialMutex;
+PosixMutex ThreadSynchronization::SettingsMutex;
+PosixMutex ThreadSynchronization::IOMutex;
+PosixMutex ThreadSynchronization::IdKeyMutex;
+int        ThreadSynchronization::semid=-1;
 
-ThreadSynchronization* ThreadSynchronization::instance = NULL;
+void ThreadSynchronization::CreateBarrierSemaphore() {
+    // create new semaphore
+    semid = semget(MY_SEM_ID, 1, 0666 | IPC_CREAT);
 
-void ThreadSynchronization::LockSettings() {
-    SerialMutex.lock();
-}
-
-void ThreadSynchronization::UnlockSettings() {
-    SerialMutex.unlock();
-}
-
-void ThreadSynchronization::LockSerial() {
-    SerialMutex.lock();
-}
-
-void ThreadSynchronization::UnlockSerial() {
-    SerialMutex.unlock();
-}
-
-void ThreadSynchronization::LockIO() {
-    syslog(LOG_DEBUG, "IO LOCK");
-    IOMutex.lock();
-}
-
-void ThreadSynchronization::UnlockIO() {
-    syslog(LOG_DEBUG, "IO UNLOCK");
-    IOMutex.unlock();
-}
-
-void ThreadSynchronization::LockIdKey() {
-    IdKeyMutex.lock();
-}
-
-void ThreadSynchronization::UnlockIdKey() {
-    IdKeyMutex.unlock();
-}
-
-ThreadSynchronization * ThreadSynchronization::getInstance() {
-    pthread_mutex_lock(&SynchroMutex);
-    if (instance == NULL) {
-         instance = new ThreadSynchronization();
+    if (semid >= 0) {
+        syslog(LOG_DEBUG, "SYNCHRO: semaphore %i created", semid);
+    } else {
+        syslog(LOG_ERR, "SYNCHRO: semaphore creation error");
     }
-    pthread_mutex_unlock(&SynchroMutex);
-    return instance;
+}
+       
+void ThreadSynchronization::AcquireBarrierSemaphore() {
+    struct sembuf sb;
+
+    if (semid<0) CreateBarrierSemaphore();
+
+    // acquire
+    sb.sem_num=0;
+    sb.sem_op=-1;
+    sb.sem_flg=0;
+    if (semop(semid, &sb, 1) >= 0) {
+         syslog(LOG_DEBUG, "SYNCHRO: semaphore acquired");
+    }
+}
+
+void ThreadSynchronization::ReleaseBarrierSemaphore() {
+    struct sembuf sb;
+
+    if (semid<0) CreateBarrierSemaphore();
+
+    // acquire
+    sb.sem_num=0;
+    sb.sem_op= 1;
+    sb.sem_flg=0;
+    if (semop(semid, &sb, 1) >= 0) {
+         syslog(LOG_DEBUG, "SYNCHRO: semaphore released");
+    }
+
 }

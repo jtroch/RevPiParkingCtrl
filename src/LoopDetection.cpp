@@ -8,6 +8,9 @@
 #include <sys/time.h>
 #include <string.h>
 
+#include <json/json.h>
+#include <json/json-forwards.h>
+
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 
@@ -16,12 +19,20 @@
 #include "HttpThread.hpp"
 #include "Settings.hpp"
 #include "Authentication.hpp"
+#include "ThreadSynchronization.hpp"
 
 using namespace onposix;
 
 LoopDetection::LoopDetection(GateType type) {
     // parent class constructor is automatically called
     loop = type;
+
+    switch (loop) {
+        case ENTRANCE:
+            sprintf(loopstring, "entrance"); break;
+        case EXIT:
+            sprintf(loopstring, "exit"); break;
+    }
 
     // compose url
     char id[10];
@@ -43,42 +54,70 @@ LoopDetection::LoopDetection(GateType type) {
     body.append("{\"key\": \"").append(key).append("\"}");
 
     // Configure timer
-    struct sigaction sa;
+    //struct sigaction sa;
     /* Install timer handler for entrance loop detection */
-    memset (&sa, 0, sizeof (sa));
+    //memset (&sa, 0, sizeof (sa));
     //sa.sa_handler = &timerCallback;
-    sigaction (SIGVTALRM, &sa, NULL);
+    //sigaction (SIGVTALRM, &sa, NULL);
 }
 
 int LoopDetection::HandleRequest() {
     RestClient::Response response;
 
-    syslog(LOG_DEBUG, "LOOPDETECTION: sending POST %s", url.c_str());
+    syslog(LOG_DEBUG, "LOOPDETECTION: sending POST %s %s", loopstring, url.c_str());
     response = HttpConnection->post(url, body);
     return ParseResponse(response);
 }
 
 int LoopDetection::ParseResponse(RestClient::Response response) {
-    return 0;
+    Json::Value root;
+    Json::Reader reader;
+    bool allowed;
+   
+    bool parsingSuccessful = reader.parse(response.body, root);
+    syslog(LOG_DEBUG, "LOOPDETECTION: response on POST %s = (%i) %s", loopstring, response.code, response.body.c_str());
+    
+    if (parsingSuccessful)
+    {
+        if (!root.isMember("access-allowed")) {
+            syslog(LOG_ERR, "LOOPDETECTION: parameter 'access-allowed' not found in response on %s", loopstring);
+        } else {
+            allowed=root.get("access-allowed", false).asBool();
+        }
+    } else {
+        syslog(LOG_DEBUG, "LOOPDETECTION: parsing failed");
+        return 0;
+    }
+
+    if (allowed) {
+        syslog(LOG_DEBUG, "LOOPDETECTION: access allowed on %s", loopstring);
+        ThreadSynchronization::ReleaseBarrierSemaphore();
+    } else {
+        syslog(LOG_DEBUG, "LOOPDETECTION: access NOT allowed on %s", loopstring);
+    }
+
+    return 1;
 }
 
+/*
 void LoopDetection::fireTimer() {
 
-    /* Configure the timers to expire after .... msec. (and no repeat) */
+    //Configure the timers to expire after .... msec. (and no repeat) 
     timer.it_value.tv_sec = 0;
     timer.it_value.tv_usec = Settings::GetLoopTimeout() * 1000;
     timer.it_interval.tv_sec = 0;
     timer.it_interval.tv_usec = 0;
 
     setitimer(ITIMER_REAL, &timer, NULL);
-}
+}*/
 
 // Callback, called when timer of entry loop ends
 // Time during which vehicle should be on entry loop
+/*
 void LoopDetection::timerCallback(int signum) {
     uint8_t bOnLoop;
 
-    //bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopAct");
+    //bOnLoop = IOHandler::GetIO("EntranceLoopAct");
     if (bOnLoop) {
         if( !Settings::PLCWorksAutonomously()) {    
             syslog(LOG_DEBUG, "VEHICLE_DETECTION: sending POST request");
@@ -88,26 +127,43 @@ void LoopDetection::timerCallback(int signum) {
           
         }
    }
+}*/
+
+bool LoopDetection::onLoop() {
+
+    switch (loop) {
+        case ENTRANCE:
+            return IOHandler::GetIO("EntranceLoopAct");
+        case EXIT:
+            return IOHandler::GetIO("ExitLoopAct");
+    }
 }
 
 void LoopDetection::run() {
-    uint32_t bOnLoop=0;
-    uint32_t bWasOnLoop=0;
-    bool GotApiIdKey=true;
-    
-    while(1)  {
-        //bOnLoop = IOHandler::getInstance()->GetIO("EntranceLoopAct");
+    bool bOnLoop=false;
+    bool bWasOnLoop=false;
+    char loopstring[12];
 
+    syslog(LOG_DEBUG, "LOOPDETECTION: thread started");
+
+    while(1)  {
         // entry loop
-        if (bOnLoop && !bWasOnLoop) { // rising edge detection
-            bWasOnLoop = true;
-            fireTimer();
-        } 
-        else if (!bOnLoop) { // reset when vehicle leaves loop
-            bWasOnLoop = false;
+        
+        bOnLoop = onLoop();
+
+        if (bOnLoop && !bWasOnLoop) {
+
+            usleep(3000000);
+            if (onLoop()) {
+                bWasOnLoop=true;
+                syslog(LOG_DEBUG, "LOOPDETECTION: on %s loop", loopstring);
+                HandleRequest();
+            }
+        } else if (!bOnLoop) {
+            bWasOnLoop=false;
         }
     
-        usleep(1000000); 
+        usleep(100000); 
     }
     return;
 }

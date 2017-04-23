@@ -48,8 +48,7 @@ int main()
     syslog(LOG_DEBUG, "--------------------------------------------------");
     syslog(LOG_DEBUG, "-----------------   Parking PLC ------------------");
     syslog(LOG_DEBUG, "--------------------------------------------------");
-
-    ledAnimation.start();
+   
 
     std::cout << "Starting Athentication ..." << std::endl;
     syslog(LOG_DEBUG, "Starting Authentication ..");
@@ -60,32 +59,31 @@ int main()
     Settings settings;
     LoopDetection loopDetectionEntrance(ENTRANCE);
     LoopDetection loopDetectionExit(EXIT);
-    Barrier entranceBarrier(ENTRANCE);
-    Barrier exitBarrier(EXIT);
-
+    Barrier barrier(ENTRANCE_EXIT);
+    
     syslog(LOG_DEBUG, "Checking all IOs ..");
-    syslog(LOG_DEBUG, "EntranceLoopAct: %i",  IOHandler::getInstance()->GetIO("EntranceLoopAct"));
-    //syslog(LOG_DEBUG, "ExitLoopAct    : %i",  IOHandler::getInstance()->GetIO("ExitLoopAct"));
-    //syslog(LOG_DEBUG, "EntranceCO     : %i",  IOHandler::getInstance()->GetIO("EntranceCO"));
-    //syslog(LOG_DEBUG, "ExitCO         : %i",  IOHandler::getInstance()->GetIO("ExitCO"));
-    //syslog(LOG_DEBUG, "PLCAuto        : %i",  IOHandler::getInstance()->GetIO("PLCAuto"));
-    //syslog(LOG_DEBUG, "OpenEntrance   :   "); IOHandler::getInstance()->SetIO("OpenEntrance", 1);
-    //syslog(LOG_DEBUG, "OpenExit       :   "); IOHandler::getInstance()->SetIO("OpenExit", 1);
-    //syslog(LOG_DEBUG, "TestOutput     :   "); IOHandler::getInstance()->SetIO("TestOutput", 1);
+    syslog(LOG_DEBUG, "EntranceLoopAct: %i",  IOHandler::GetIO("EntranceLoopAct"));
+    syslog(LOG_DEBUG, "ExitLoopAct    : %i",  IOHandler::GetIO("ExitLoopAct"));
+    syslog(LOG_DEBUG, "EntranceCO     : %i",  IOHandler::GetIO("EntranceCO"));
+    syslog(LOG_DEBUG, "ExitCO         : %i",  IOHandler::GetIO("ExitCO"));
+    syslog(LOG_DEBUG, "PLCAuto        : %i",  IOHandler::GetIO("PLCAuto"));
+    syslog(LOG_DEBUG, "OpenEntrance   :   "); IOHandler::SetIO("OpenEntrance", false);
+    syslog(LOG_DEBUG, "OpenExit       :   "); IOHandler::SetIO("OpenExit", false);
+    syslog(LOG_DEBUG, "TestOutput     :   "); IOHandler::SetIO("TestOutput", false);
 
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 
-    //settings.start();
-    //loopDetectionEntrance.start();
-    //entranceBarrier.start();
-
-    //loopDetectionExit.start();
-    //exitBarrier.start();
+    ledAnimation.start();
+    settings.start();
+    loopDetectionEntrance.start();
+    loopDetectionExit.start();
+    barrier.start();
     
-    //ledAnimation.waitForTermination();
-    //settings.waitForTermination();
-    //loopDetectionEntrance.waitForTermination();
-    //entranceBarrier.waitForTermination();
-
+    ledAnimation.waitForTermination();
+    settings.waitForTermination();
+    loopDetectionEntrance.waitForTermination();
+    loopDetectionExit.waitForTermination();
+    barrier.waitForTermination();
+  
     return 0;
 }

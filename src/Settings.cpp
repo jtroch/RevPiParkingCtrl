@@ -20,7 +20,6 @@ int  Settings::HttpTimeout=2000;
 int  Settings::BarrierPulseLength=1000;
 bool Settings::TestOutput=false;
 
-
 Settings::Settings() {
     // parent class constructor is automatically called
     char id[10];
@@ -67,7 +66,7 @@ int Settings::ParseResponse(RestClient::Response response) {
         if (key==Authentication::GetKey()) {
             // parse all other parameters if key matches
             // Critical section
-             ThreadSynchronization::getInstance()->LockSettings();
+            ThreadSynchronization::SettingsMutex.lock();
 
             if (!root.isMember("entrance-open")) {
                 syslog(LOG_DEBUG, "SETTINGS: parameter 'entrance-open' not found in response");
@@ -109,11 +108,11 @@ int Settings::ParseResponse(RestClient::Response response) {
                 syslog(LOG_DEBUG, "SETTINGS: parameter 'test-output' not found in response");
             } else {
                 TestOutput=root.get("test-output", false).asBool();
-                IOHandler::getInstance()->SetIO("TestOutput", TestOutput);
+                IOHandler::SetIO("TestOutput", TestOutput);
             }
             
             // End critical section
-            ThreadSynchronization::getInstance()->UnlockSettings();
+            ThreadSynchronization::SettingsMutex.unlock();
             syslog(LOG_DEBUG, "SETTINGS: settings updated");
             return 1;
 
@@ -126,40 +125,40 @@ int Settings::ParseResponse(RestClient::Response response) {
 
 int Settings::GetLoopTimeout() {
     // Critical section
-    ThreadSynchronization::getInstance()->LockSettings();
+    ThreadSynchronization::SettingsMutex.lock();
     return LoopTimeout;
-    ThreadSynchronization::getInstance()->UnlockSettings();
+    ThreadSynchronization::SettingsMutex.unlock();
 }
 
 int Settings::GetHttpTimeout() {
     // Critical section
-    ThreadSynchronization::getInstance()->LockSettings();
+    ThreadSynchronization::SettingsMutex.lock();
     return HttpTimeout;
-    ThreadSynchronization::getInstance()->UnlockSettings();
+    ThreadSynchronization::SettingsMutex.unlock();
 }
 
 int Settings::GetBarrierPulseLength() {
     // Critical section
-    ThreadSynchronization::getInstance()->LockSettings();
+    ThreadSynchronization::SettingsMutex.lock();
     return BarrierPulseLength;
-    ThreadSynchronization::getInstance()->UnlockSettings();
+    ThreadSynchronization::SettingsMutex.unlock();
 }
 
 bool Settings::PLCWorksAutonomously() {
     int plcauto_hw=0;
     bool ret=false;
 
-    if ((plcauto_hw=IOHandler::getInstance()->GetIO("PLCAuto"))==1)
+    if ((plcauto_hw=IOHandler::GetIO("PLCAuto"))==1)
     syslog(LOG_DEBUG, "SETTINGS: HW PLCAuto = %i", plcauto_hw);
 
-    ThreadSynchronization::getInstance()->LockSettings();
+    ThreadSynchronization::SettingsMutex.lock();
     if ( (plcauto_hw==1) || PLCAuto) {
         syslog(LOG_DEBUG, "SETTINGS: PLC works autonomously", plcauto_hw);
         ret=true;
     } else {
         syslog(LOG_DEBUG, "SETTINGS: PLC communicates with LPR", plcauto_hw);
     }
-    ThreadSynchronization::getInstance()->UnlockSettings();
+    ThreadSynchronization::SettingsMutex.unlock();
     
     return ret;
 }
@@ -168,32 +167,34 @@ bool Settings::BarrierContinuouslyOpen(GateType type) {
     int CO_hw=0;
     bool ret=false;
 
-    ThreadSynchronization::getInstance()->LockSettings();
+    ThreadSynchronization::SettingsMutex.lock();
     switch (type) {
         case ENTRANCE:
-            CO_hw = IOHandler::getInstance()->GetIO("EntranceCO");  
+            CO_hw = IOHandler::GetIO("EntranceCO");  
             if ( (CO_hw==1) || EntranceCO) {
                 syslog(LOG_DEBUG, "SETTINGS: Entrance continuously set open");
                 ret=true;
             }
         case EXIT:
-            CO_hw = IOHandler::getInstance()->GetIO("ExitCO");  
+            CO_hw = IOHandler::GetIO("ExitCO");  
             if ( (CO_hw==1) || ExitCO) { 
                 syslog(LOG_DEBUG, "SETTINGS: Exit continuously set open");
                 ret=true;
             }
     }
-    ThreadSynchronization::getInstance()->UnlockSettings();
+    ThreadSynchronization::SettingsMutex.unlock();
     return ret;
 }
 
 void Settings::run() {
     
+    syslog(LOG_DEBUG, "SETTINGS: thread started");
+
     while(1)  {
         syslog(LOG_DEBUG, "SETTINGS: sending GET request");
         HandleRequest();
         
-        usleep(10000000); 
+        usleep(15000000); 
     }
     return;
 }

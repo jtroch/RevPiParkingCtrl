@@ -28,7 +28,8 @@ enum HttpMsgType {
 
 enum GateType {
     ENTRANCE,
-    EXIT
+    EXIT,
+    ENTRANCE_EXIT
 };
 
 #endif

@@ -4,12 +4,9 @@
 
 class IOHandler {
     private:
-        static IOHandler * instance;
-        IOHandler() {};
-        piControl piCtrl;
+        static piControl piCtrl;
 
     public:
-        static IOHandler * getInstance();
-        int GetIO(const char* name);
-        int SetIO(const char* name, bool on);
+        static bool GetIO(const char* name);
+        static int SetIO(const char* name, bool on);
 };  
