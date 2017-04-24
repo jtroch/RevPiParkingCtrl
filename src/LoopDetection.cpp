@@ -51,7 +51,7 @@ LoopDetection::LoopDetection(GateType type) {
     // compose body
     char key[10];
     sprintf(key, "%d", Authentication::GetKey());
-    body.append("{\"key\": \"").append(key).append("\"}");
+    body.append("{\"key\": ").append(key).append("\"}");
 
     // Configure timer
     //struct sigaction sa;
@@ -142,7 +142,6 @@ bool LoopDetection::onLoop() {
 void LoopDetection::run() {
     bool bOnLoop=false;
     bool bWasOnLoop=false;
-    char loopstring[12];
 
     syslog(LOG_DEBUG, "LOOPDETECTION: thread started");
 

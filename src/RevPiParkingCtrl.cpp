@@ -49,12 +49,13 @@ int main()
     syslog(LOG_DEBUG, "-----------------   Parking PLC ------------------");
     syslog(LOG_DEBUG, "--------------------------------------------------");
    
-
+#if DYNAMIC_AUTHENTICATION
     std::cout << "Starting Athentication ..." << std::endl;
     syslog(LOG_DEBUG, "Starting Authentication ..");
     authentication.start();
     // wait for authentication to finish before going on
     authentication.waitForTermination();
+#endif
 
     Settings settings;
     LoopDetection loopDetectionEntrance(ENTRANCE);

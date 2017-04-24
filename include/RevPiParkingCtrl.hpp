@@ -16,6 +16,7 @@
 #define SERVER_ADDRESS "http://192.168.1.110"
 #define BASE_API_PATH  "/api.imber.nu/client/"
 
+//#define DYNAMIC_AUTHENTICATION
 
 #define SETTINGS_UPDATE_INTERVAL 1000000
 

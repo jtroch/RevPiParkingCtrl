@@ -15,8 +15,8 @@
 #include "Authentication.hpp"
 #include "HttpThread.hpp"
 
-int Authentication::Id=1234;
-int Authentication::Key=6789;
+int Authentication::Id=23;
+int Authentication::Key=1975;
 
 Authentication::Authentication() {
     // parent class constructor is automatically called
@@ -26,7 +26,7 @@ int Authentication::HandleRequest() {
     RestClient::Response response;
     std::string url;
 
-    url.append(BASE_API_PATH).append("idkey");
+    url.append(BASE_API_PATH).append("authentication");
    
     // set connection timeout to 5s
     HttpConnection->SetTimeout(5);
