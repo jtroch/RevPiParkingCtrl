@@ -45,46 +45,54 @@ int main()
 
     std::cout << "Starting Tasks...\n";
 
-    syslog(LOG_DEBUG, "--------------------------------------------------");
-    syslog(LOG_DEBUG, "-----------------   Parking PLC ------------------");
-    syslog(LOG_DEBUG, "--------------------------------------------------");
+    syslog(LOG_INFO, "--------------------------------------------------");
+    syslog(LOG_INFO, "-----------------   Parking PLC ------------------");
+    syslog(LOG_INFO, "--------------------------------------------------");
    
 #if DYNAMIC_AUTHENTICATION
     std::cout << "Starting Athentication ..." << std::endl;
-    syslog(LOG_DEBUG, "Starting Authentication ..");
+    syslog(LOG_INFO, "Starting Authentication ..");
     authentication.start();
     // wait for authentication to finish before going on
     authentication.waitForTermination();
+#else
+    std::cout << "Only static authentication." << std::endl;
+    syslog(LOG_INFO, "Only static Authentication ..");
 #endif
 
-    Settings settings;
-    LoopDetection loopDetectionEntrance(ENTRANCE);
-    LoopDetection loopDetectionExit(EXIT);
-    Barrier barrier(ENTRANCE_EXIT);
-    
-    syslog(LOG_DEBUG, "Checking all IOs ..");
-    syslog(LOG_DEBUG, "EntranceLoopAct: %i",  IOHandler::GetIO("EntranceLoopAct"));
-    syslog(LOG_DEBUG, "ExitLoopAct    : %i",  IOHandler::GetIO("ExitLoopAct"));
-    syslog(LOG_DEBUG, "EntranceCO     : %i",  IOHandler::GetIO("EntranceCO"));
-    syslog(LOG_DEBUG, "ExitCO         : %i",  IOHandler::GetIO("ExitCO"));
-    syslog(LOG_DEBUG, "PLCAuto        : %i",  IOHandler::GetIO("PLCAuto"));
-    syslog(LOG_DEBUG, "OpenEntrance   :   "); IOHandler::SetIO("OpenEntrance", false);
-    syslog(LOG_DEBUG, "OpenExit       :   "); IOHandler::SetIO("OpenExit", false);
-    syslog(LOG_DEBUG, "TestOutput     :   "); IOHandler::SetIO("TestOutput", false);
+    syslog(LOG_INFO, "Checking all IOs ..");
+    syslog(LOG_INFO, "EntranceLoopAct: %i",  IOHandler::GetIO("EntranceLoopAct"));
+    syslog(LOG_INFO, "ExitLoopAct    : %i",  IOHandler::GetIO("ExitLoopAct"));
+    syslog(LOG_INFO, "EntranceCO     : %i",  IOHandler::GetIO("EntranceCO"));
+    syslog(LOG_INFO, "ExitCO         : %i",  IOHandler::GetIO("ExitCO"));
+    syslog(LOG_INFO, "PLCAuto        : %i",  IOHandler::GetIO("PLCAuto"));
+    syslog(LOG_INFO, "OpenEntrance   :   "); IOHandler::SetIO("OpenEntrance", false);
+    syslog(LOG_INFO, "OpenExit       :   "); IOHandler::SetIO("OpenExit", false);
+    syslog(LOG_INFO, "TestOutput     :   "); IOHandler::SetIO("TestOutput", false);
 
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 
+    Settings settings;
     ledAnimation.start();
     settings.start();
-    loopDetectionEntrance.start();
-    loopDetectionExit.start();
-    barrier.start();
+
+    Barrier entranceBarrier(ENTRANCE);
+    Barrier exitBarrier(EXIT);
+    LoopDetection entranceLoopDetection(ENTRANCE);
+    LoopDetection exitLoopDetection(EXIT);
+    entranceBarrier.start();
+    exitBarrier.start();
+    entranceLoopDetection.start();
+    exitLoopDetection.start();
+
+// Wait for all tasks to finish but the application should not get here
     
     ledAnimation.waitForTermination();
     settings.waitForTermination();
-    loopDetectionEntrance.waitForTermination();
-    loopDetectionExit.waitForTermination();
-    barrier.waitForTermination();
-  
+    entranceLoopDetection.waitForTermination();
+    entranceBarrier.waitForTermination();
+    exitLoopDetection.waitForTermination();
+    exitBarrier.waitForTermination();
+
     return 0;
 }

@@ -13,7 +13,10 @@
 //#define LOG_LEVEL_FILE  LOG_ERRORS
 //#define LOG_LEVEL_FILE  LOG_ALL
 
-#define SERVER_ADDRESS "http://192.168.1.110"
+//#define SERVER_ADDRESS "http://192.168.1.110"
+
+#define SERVER_ADDRESS "http://api.rsbots.org"
+
 #define BASE_API_PATH  "/api.imber.nu/client/"
 
 //#define DYNAMIC_AUTHENTICATION

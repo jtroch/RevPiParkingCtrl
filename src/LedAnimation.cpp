@@ -23,7 +23,7 @@ void LedAnimation::run() {
     uint8_t ledvalue=0x01;
     uint8_t newledvalue=0x00;
 
-    syslog(LOG_DEBUG, "LEDANIMATION: thread started");
+    syslog(LOG_INFO, "LEDANIMATION: thread started");
     piControl piCtrl;
 
     while (1)  {    

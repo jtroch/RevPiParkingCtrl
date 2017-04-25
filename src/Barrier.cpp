@@ -24,28 +24,26 @@ Barrier::Barrier(GateType type) {
 }
 
 void Barrier::setBarrier(bool open)  {
-    switch (barrier) {
-        case ENTRANCE:
-            IOHandler::SetIO("OpenEntrance", open);
-            break;
-        case EXIT:
-            IOHandler::SetIO("OpenExit", open);
-            break;
-        case ENTRANCE_EXIT:
-            IOHandler::SetIO("OpenEntrance", open);
-            break;
+    if (barrier==ENTRANCE)
+        IOHandler::SetIO("OpenEntrance", open);
+    } else {
+        IOHandler::SetIO("OpenExit", open);
     }
 }
 
 void Barrier::run() {
     
-    syslog(LOG_DEBUG, "BARRIER: thread started");
+    syslog(LOG_INFO, "BARRIER: thread started");
 
     while(1)  {
-        
-        ThreadSynchronization::AcquireBarrierSemaphore();
+        if (barrier==ENTRANCE)
+            ThreadSynchronization::AcquireEntranceBarrierSemaphore();
+        } else {
+            ThreadSynchronization::AcquireExitBarrierSemaphore();
+        }
+       
         setBarrier(true);
-        syslog(LOG_DEBUG, "BARRIER: opened");
+        syslog(LOG_INFO, "BARRIER: opened");
         usleep(1000000);
     
         if (Settings::BarrierContinuouslyOpen(barrier)) {
