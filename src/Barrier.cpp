@@ -39,13 +39,13 @@ void Barrier::setBarrier(bool open)  {
 
 void Barrier::run() {
     
-    syslog(LOG_DEBUG, "BARRIER: thread started");
+    syslog(LOG_INFO, "BARRIER: thread started");
 
     while(1)  {
         
         ThreadSynchronization::AcquireBarrierSemaphore();
         setBarrier(true);
-        syslog(LOG_DEBUG, "BARRIER: opened");
+        syslog(LOG_INFO, "BARRIER: opened");
         usleep(1000000);
     
         if (Settings::BarrierContinuouslyOpen(barrier)) {

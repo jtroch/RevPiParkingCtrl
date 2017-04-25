@@ -39,7 +39,7 @@ Settings::Settings() {
 int Settings::HandleRequest() {
     RestClient::Response response;
 
-    syslog(LOG_DEBUG, "SETTINGS: sending GET %s", url.c_str());
+    syslog(LOG_INFO, "SETTINGS: sending GET %s", url.c_str());
     response = HttpConnection->get(url);
     return ParseResponse(response);
 }
@@ -55,7 +55,7 @@ int Settings::ParseResponse(RestClient::Response response) {
     int pulseLength;
 
     bool parsingSuccessful = reader.parse(response.body, root);
-    syslog(LOG_DEBUG, "SETTINGS: response on GET settings= (%i) %s", response.code, response.body.c_str());
+    syslog(LOG_INFO, "SETTINGS: response on GET settings= (%i) %s", response.code, response.body.c_str());
     
     if (parsingSuccessful)
     {
@@ -113,12 +113,12 @@ int Settings::ParseResponse(RestClient::Response response) {
             
             // End critical section
             ThreadSynchronization::SettingsMutex.unlock();
-            syslog(LOG_DEBUG, "SETTINGS: settings updated");
+            syslog(LOG_INFO, "SETTINGS: settings updated");
             return 1;
 
         } else syslog(LOG_DEBUG, "SETTINGS: authentication failed");
 
-    } else syslog(LOG_DEBUG, "SETTINGS: parsing failed");
+    } else syslog(LOG_ERR, "SETTINGS: parsing failed");
 
     return 0;
 }
@@ -188,10 +188,10 @@ bool Settings::BarrierContinuouslyOpen(GateType type) {
 
 void Settings::run() {
     
-    syslog(LOG_DEBUG, "SETTINGS: thread started");
+    syslog(LOG_INFO, "SETTINGS: thread started");
 
     while(1)  {
-        syslog(LOG_DEBUG, "SETTINGS: sending GET request");
+        //syslog(LOG_INFO, "SETTINGS: sending GET request");
         HandleRequest();
         
         usleep(15000000); 

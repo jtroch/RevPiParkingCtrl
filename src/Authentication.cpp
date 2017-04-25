@@ -36,7 +36,7 @@ int Authentication::HandleRequest() {
     headers["Content-Type"] = "text/json";
     HttpConnection->SetHeaders(headers);
 
-    syslog(LOG_DEBUG, "AUTHENTICATION: sending GET %s", url.c_str());
+    syslog(LOG_INFO, "AUTHENTICATION: sending GET %s", url.c_str());
     response = HttpConnection->get(url);
     return ParseResponse(response);
 }
@@ -49,7 +49,7 @@ int Authentication::ParseResponse(RestClient::Response response) {
     int key;
 
     bool parsingSuccessful = reader.parse(response.body, root);
-    syslog(LOG_DEBUG, "AUTHENTICATION: response on GET idkey= (%i) %s", response.code, response.body.c_str());
+    syslog(LOG_INFO, "AUTHENTICATION: response on GET idkey= (%i) %s", response.code, response.body.c_str());
     
     if (parsingSuccessful)
     {
@@ -67,7 +67,7 @@ int Authentication::ParseResponse(RestClient::Response response) {
         return 0;
 
     }
-    syslog(LOG_DEBUG, "AUTHENTICATION: id and key updated");
+    syslog(LOG_INFO, "AUTHENTICATION: id and key updated");
     Update(id, key);
 
     return 1;
@@ -106,7 +106,7 @@ void Authentication::run() {
     while(1)  {
         syslog(LOG_DEBUG, "AUTHENTICATION: sending GET request");
         if (HandleRequest()) {
-            syslog(LOG_DEBUG, "AUTHENTICATION: finished, thread killed");
+            syslog(LOG_INFO, "AUTHENTICATION: finished, thread killed");
             stop();
         }
         usleep(1000000); 

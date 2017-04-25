@@ -37,9 +37,12 @@ LoopDetection::LoopDetection(GateType type) {
     // compose url
     char id[10];
     sprintf(id, "%d", Authentication::GetId());
-    if (loop==ENTRANCE) url.append(BASE_API_PATH).append(id).append("/parking").append("/entrance");
-    else                url.append(BASE_API_PATH).append(id).append("/parking").append("/exit");
+    //if (loop==ENTRANCE) url.append(BASE_API_PATH).append(id).append("/parking").append("/entrance");
+    //else                url.append(BASE_API_PATH).append(id).append("/parking").append("/exit");
    
+    if (loop==ENTRANCE) url.append("/imber/barrier/true");
+    else url.append("/imber/barrier/false");
+
     // set connection timeout to 5s
     HttpConnection->SetTimeout(5);
 
@@ -65,7 +68,8 @@ int LoopDetection::HandleRequest() {
     RestClient::Response response;
 
     syslog(LOG_DEBUG, "LOOPDETECTION: sending POST %s %s", loopstring, url.c_str());
-    response = HttpConnection->post(url, body);
+    //response = HttpConnection->post(url, body);
+    response = HttpConnection->get(url);
     return ParseResponse(response);
 }
 
@@ -75,14 +79,14 @@ int LoopDetection::ParseResponse(RestClient::Response response) {
     bool allowed;
    
     bool parsingSuccessful = reader.parse(response.body, root);
-    syslog(LOG_DEBUG, "LOOPDETECTION: response on POST %s = (%i) %s", loopstring, response.code, response.body.c_str());
+    syslog(LOG_INFO, "LOOPDETECTION: response on POST %s = (%i) %s", loopstring, response.code, response.body.c_str());
     
     if (parsingSuccessful)
     {
-        if (!root.isMember("access-allowed")) {
-            syslog(LOG_ERR, "LOOPDETECTION: parameter 'access-allowed' not found in response on %s", loopstring);
+        if (!root.isMember("allowed")) {
+            syslog(LOG_DEBUG, "LOOPDETECTION: parameter 'allowed' not found in response on %s", loopstring);
         } else {
-            allowed=root.get("access-allowed", false).asBool();
+            allowed=root.get("allowed", false).asBool();
         }
     } else {
         syslog(LOG_DEBUG, "LOOPDETECTION: parsing failed");
@@ -90,10 +94,10 @@ int LoopDetection::ParseResponse(RestClient::Response response) {
     }
 
     if (allowed) {
-        syslog(LOG_DEBUG, "LOOPDETECTION: access allowed on %s", loopstring);
+        syslog(LOG_INFO, "LOOPDETECTION: access allowed on %s", loopstring);
         ThreadSynchronization::ReleaseBarrierSemaphore();
     } else {
-        syslog(LOG_DEBUG, "LOOPDETECTION: access NOT allowed on %s", loopstring);
+        syslog(LOG_INFO, "LOOPDETECTION: access NOT allowed on %s", loopstring);
     }
 
     return 1;
@@ -143,7 +147,7 @@ void LoopDetection::run() {
     bool bOnLoop=false;
     bool bWasOnLoop=false;
 
-    syslog(LOG_DEBUG, "LOOPDETECTION: thread started");
+    syslog(LOG_INFO, "LOOPDETECTION: thread started");
 
     while(1)  {
         // entry loop
@@ -155,7 +159,7 @@ void LoopDetection::run() {
             usleep(3000000);
             if (onLoop()) {
                 bWasOnLoop=true;
-                syslog(LOG_DEBUG, "LOOPDETECTION: on %s loop", loopstring);
+                syslog(LOG_INFO, "LOOPDETECTION: on %s loop", loopstring);
                 HandleRequest();
             }
         } else if (!bOnLoop) {
