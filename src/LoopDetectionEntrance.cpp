@@ -85,20 +85,29 @@ int LoopDetectionEntrance::ParseResponse(RestClient::Response response) {
     return 1;
 }
 
-#if SITE_ZWIJNAARDSESTEENWEG
+#ifdef SITE_ZWIJNAARDSESTEENWEG
+
+double TimeInMilliseconds() {
+    struct timeval tv = { 0 };
+    gettimeofday(&tv, NULL);
+    return (tv.tv_usec) / 1000 ;
+}
 
 void LoopDetectionEntrance::run() {
     
     bool bOnEntranceLoop=false;
+    bool bOnExitLoop=false;
     bool bOnEntranceLoop_d=false;
     bool bEntranceDetected=false;
     bool bEntranceSequence=false;
+    double EntranceSequenceStartTime;
 
     syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: thread started");
 
     while(1)  {
         
         bOnEntranceLoop = IOHandler::GetIO("EntranceLoopAct");
+        bOnExitLoop     = IOHandler::GetIO("ExitLoopAct");
 
         // entrance handling
         // rule: a vehicle on the entrance loop will only trigger the LPR when 
@@ -112,7 +121,7 @@ void LoopDetectionEntrance::run() {
             if (!bOnExitLoop) {
                 bEntranceDetected = false;
                 bEntranceSequence = true;
-                EntranceSequenceStartTime = time();
+                EntranceSequenceStartTime = TimeInMilliseconds();
             } else {
                 //wait until lus uitrit deactivated;
             }
@@ -121,7 +130,7 @@ void LoopDetectionEntrance::run() {
         if (bEntranceSequence) {
             if (!bOnEntranceLoop) { // vehicle leaves entrance loop 
                 bEntranceSequence=false;
-            } else if ((time()-EntranceSequenceStartTime) > 2000) {
+            } else if ((TimeInMilliseconds()-EntranceSequenceStartTime) > 2000) {
                 bOnEntranceLoop = IOHandler::GetIO("EntranceLoopAct");
                 if (bOnEntranceLoop) {
                     bEntranceSequence = false;
@@ -133,12 +142,12 @@ void LoopDetectionEntrance::run() {
         bOnEntranceLoop_d = bOnEntranceLoop;      
         usleep(100000); 
     }
-    }
+    
     return;
 }
 #else
 
-void LoopDetection::run() {
+void LoopDetectionEntrance::run() {
     bool bOnLoop=false;
     bool bWasOnLoop=false;
 

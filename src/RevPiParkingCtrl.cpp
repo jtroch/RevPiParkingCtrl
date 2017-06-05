@@ -18,7 +18,8 @@
 #include "LedAnimation.hpp"
 #include "Settings.hpp"
 #include "Authentication.hpp"
-#include "LoopDetection.hpp"
+#include "LoopDetectionEntrance.hpp"
+#include "LoopDetectionExit.hpp"
 #include "Barrier.hpp"
 #include "IOHandler.hpp"
 
@@ -78,8 +79,8 @@ int main()
 
     Barrier entranceBarrier(ENTRANCE);
     Barrier exitBarrier(EXIT);
-    LoopDetection entranceLoopDetection(ENTRANCE);
-    LoopDetection exitLoopDetection(EXIT);
+    LoopDetectionEntrance entranceLoopDetection;
+    LoopDetectionExit exitLoopDetection;
     entranceBarrier.start();
     exitBarrier.start();
     entranceLoopDetection.start();

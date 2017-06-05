@@ -14,7 +14,7 @@
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 
-#include "LoopDetectionEntrance.hpp"
+#include "LoopDetectionExit.hpp"
 #include "IOHandler.hpp"
 #include "HttpThread.hpp"
 #include "Settings.hpp"
@@ -50,9 +50,15 @@ LoopDetectionExit::LoopDetectionExit() {
 int LoopDetectionExit::HandleRequest() {
     RestClient::Response response;
 
-    syslog(LOG_DEBUG, "LOOPDETECTION EXIT: sending GET %s", url.c_str());
-    response = HttpConnection->get(url);
-    return ParseResponse(response);
+    if (Settings::PLCWorksAutonomously()) {
+        syslog(LOG_INFO, "LOOPDETECTION EXIT: autonomous (allowed)");
+        ThreadSynchronization::ReleaseExitBarrierSemaphore();
+        return 1;
+    } else {
+        syslog(LOG_DEBUG, "LOOPDETECTION EXIT: sending GET %s", url.c_str());
+        response = HttpConnection->get(url);
+        return ParseResponse(response);
+    }
 }
 
 int LoopDetectionExit::ParseResponse(RestClient::Response response) {
@@ -77,7 +83,7 @@ int LoopDetectionExit::ParseResponse(RestClient::Response response) {
 
     if (allowed) {
         syslog(LOG_INFO, "LOOPDETECTION EXIT: access allowed");
-#if SITE_ZWIJNAARDSESTEENWEG
+#ifdef SITE_ZWIJNAARDSESTEENWEG
         ThreadSynchronization::ReleaseExitBarrierSemaphore();
         ThreadSynchronization::ReleaseEntranceBarrierSemaphore();
 #else
@@ -90,32 +96,64 @@ int LoopDetectionExit::ParseResponse(RestClient::Response response) {
     return 1;
 }
 
-#if SITE_ZWIJNAARDSESTEENWEG
+#ifdef SITE_ZWIJNAARDSESTEENWEG
 
 void LoopDetectionExit::run() {
     
     bool bOnEntranceLoop=false;
-    bool bOnEntranceLoop_d=false;
-    bool bEntranceDetected=false;
-    bool bEntranceSequence=false;
+    bool bOnExitLoop=false;
+    bool bOnExitLoop_d=false;
+    bool bExitSequence=false;
+    bool bTicket=false;
+    bool bTicket_d=false;
+    bool bMoney=false;
+    bool bMoney_d=false;
+    bool bTicketInserted=false;
+    bool bMoneyInserted=false;
 
     syslog(LOG_INFO, "LOOPDETECTION EXIT: thread started");
 
     while(1)  {
         
-        bOnEntranceLoop = IOHandler::GetIO("ExitLoopAct");
+        bOnEntranceLoop = IOHandler::GetIO("EntranceLoopAct");
+        bOnExitLoop     = IOHandler::GetIO("ExitLoopAct");
+        bTicket         = IOHandler::GetIO("TicketAct");
+        bMoney          = IOHandler::GetIO("MoneyAct");
 
         // exit handling
         // rule: a vehicle on the entrance loop will only trigger the LPR when 
         // when there is no vehicle on the exit loop and when the entrance loop is at least activated for 2 seconds
         // In case there is a vehicle on the exit loop, it will wait until the exit loop is deactivated
-        if (bOnEntranceLoop && !bOnEntranceLoop_d) {
-            bEntranceDetected=true;
+        if (bOnExitLoop && !bOnExitLoop_d) {
+            bExitSequence=true;
+        } 
+        if (bTicket && !bTicket_d) {
+            bTicketInserted=true;
+        } 
+        if (bMoney && !bMoney_d) {
+            bMoneyInserted=true;
         } 
 
-        bOnEntranceLoop_d = bOnEntranceLoop;      
+        if (bExitSequence) {
+            if (!bOnExitLoop) {  
+                bExitSequence=false;
+            } else {
+                if (!bOnEntranceLoop) {
+                    if (bTicketInserted || bMoneyInserted) {
+                        bExitSequence=false;
+                        bTicketInserted=false;
+                        bMoneyInserted=false;
+                        HandleRequest();
+                    }
+                }
+            }
+        }
+
+        bOnExitLoop_d = bOnExitLoop; 
+        bTicket_d = bTicket;
+        bMoney_d =  bMoney;
+
         usleep(100000); 
-    }
     }
     return;
 }

@@ -24,7 +24,7 @@ Barrier::Barrier(GateType type) {
 }
 
 void Barrier::setBarrier(bool open)  {
-    if (barrier==ENTRANCE)
+    if (barrier==ENTRANCE) {
         IOHandler::SetIO("OpenEntrance", open);
     } else {
         IOHandler::SetIO("OpenExit", open);
@@ -36,7 +36,7 @@ void Barrier::run() {
     syslog(LOG_INFO, "BARRIER: thread started");
 
     while(1)  {
-        if (barrier==ENTRANCE)
+        if (barrier==ENTRANCE) {
             ThreadSynchronization::AcquireEntranceBarrierSemaphore();
         } else {
             ThreadSynchronization::AcquireExitBarrierSemaphore();

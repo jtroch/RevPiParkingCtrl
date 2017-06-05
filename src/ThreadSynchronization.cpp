@@ -10,12 +10,13 @@ PosixMutex ThreadSynchronization::SerialMutex;
 PosixMutex ThreadSynchronization::SettingsMutex;
 PosixMutex ThreadSynchronization::IOMutex;
 PosixMutex ThreadSynchronization::IdKeyMutex;
-int        ThreadSynchronization::semid=-1;
+int        ThreadSynchronization::semIdEntranceBarrier=-1;
+int        ThreadSynchronization::semIdExitBarrier=-1;
        
 void ThreadSynchronization::AcquireEntranceBarrierSemaphore() {
     struct sembuf sb;
 
-    if (semIdEntranceBarrier < 0) {
+    if (semIdEntranceBarrier < 0)
         if ((semIdEntranceBarrier=semget(SEM_ID_ENTRANCE, 1, 0666 | IPC_CREAT)) < 0)  
             syslog(LOG_ERR, "SYNCHRO: entrance barrier semaphore creation error");
 
@@ -31,7 +32,7 @@ void ThreadSynchronization::AcquireEntranceBarrierSemaphore() {
 void ThreadSynchronization::ReleaseEntranceBarrierSemaphore() {
     struct sembuf sb;
 
-    if (semIdEntranceBarrier < 0) {
+    if (semIdEntranceBarrier < 0)
         if ((semIdEntranceBarrier=semget(SEM_ID_ENTRANCE, 1, 0666 | IPC_CREAT)) < 0)  
             syslog(LOG_ERR, "SYNCHRO: entrance barrier semaphore creation error");
 
@@ -44,10 +45,10 @@ void ThreadSynchronization::ReleaseEntranceBarrierSemaphore() {
     }
 }
 
-void ThreadSynchronization::AcquireExitBarrierSemaphore(GateType type) {
+void ThreadSynchronization::AcquireExitBarrierSemaphore() {
     struct sembuf sb;
 
-    if (semIdExitBarrier < 0) {
+    if (semIdExitBarrier < 0) 
         if ((semIdExitBarrier=semget(SEM_ID_EXIT, 1, 0666 | IPC_CREAT)) < 0)  
             syslog(LOG_ERR, "SYNCHRO: exit barrier semaphore creation error");
 
@@ -60,10 +61,10 @@ void ThreadSynchronization::AcquireExitBarrierSemaphore(GateType type) {
     }
 }
 
-void ThreadSynchronization::ReleaseExitBarrierSemaphore(GateType type) {
+void ThreadSynchronization::ReleaseExitBarrierSemaphore() {
     struct sembuf sb;
 
-    if (semIdExitBarrier < 0) {
+    if (semIdExitBarrier < 0) 
         if ((semIdExitBarrier=semget(SEM_ID_EXIT, 1, 0666 | IPC_CREAT)) < 0)  
             syslog(LOG_ERR, "SYNCHRO: exit barrier semaphore creation error");
 

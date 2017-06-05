@@ -1,7 +1,6 @@
 #include <sys/sem.h>
 
 #include <onposix/PosixMutex.hpp>
-#include "ThreadSynchronization.hpp"
 
 #define SEM_ID_ENTRANCE 1
 #define SEM_ID_EXIT 2

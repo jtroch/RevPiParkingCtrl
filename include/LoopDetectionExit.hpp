@@ -19,6 +19,6 @@ class LoopDetectionExit : public HttpThread {
 
     public:
         LoopDetectionExit();
-        ~LoopDetectionEntrance() {};
+        ~LoopDetectionExit() {};
         void run();
 };
