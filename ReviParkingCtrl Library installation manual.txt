@@ -1,0 +1,50 @@
+RevPiParkingCtrl:
+
+dir structure
+
+/projects
+	/libs                      - all libraries
+		/onposix           - git clone of onposix lib	 
+		/jsoncpp           - git clone of jsoncpp lib
+		/restclient-cpp    - git clone of restclient-cpp lib
+		/demo              - copy from RevPi site
+	/RevPiParkingCtrl	   - all code specific for parking controller
+		/src
+		/include
+		/build
+
+
+1/ lib onposix => lonposix
+   git clone git://git.code.sf.net/p/onposix/code onposix-code
+   make
+   sudo make install
+   sudo cp -f -a libonposix* /usr/local/lib (install libs in /usr/local/lib)
+   cd /usr/local/include
+   sudo mkdir onposix
+   cd /home/pi/projects/libs/onposix/include (install header files)
+   sudo cp * /usr/local/include/onposix
+
+2/ lib jsoncpp => ljsoncpp
+   git clone https://github.com/open-source-parsers/jsoncpp.git
+   python amalgamate.py => generates 'dist' directory with 2 header files and 1 source file to be used in projects
+   cd /usr/local/include
+   sudo mkdir jsoncpp
+   cd /home/pi/projects/libs/jsoncpp/dist/json (install header files)
+   sudo cp * /usr/local/include/jsoncpp
+
+3/ lib restclient-cpp = lrestclient-cpp
+   git clone https://github.com/mrtazz/restclient-cpp.git
+   sudo apt-get install autoconf (of dh-autoreconf)
+   sudo apt-get install libcurl4-gnutls-dev
+   sudo make install => libs are installed in /usr/local/lib, header files in /usr/local/include
+
+4/ Download 'demo' from RevPi site to projects dir
+   cd /demo
+   cp *.h ../../RevPiPrkingCtrl/include
+   cp piControlIf.cp ../../RevPiPrkingCtrl/src
+
+5/ Adapt /etc/rsyslog.conf
+
+6/ cd RevPiParkingCtrl
+   git config --global user.email "john.troch@telenet.be"
+   git config --global user.name  "jtroch"
