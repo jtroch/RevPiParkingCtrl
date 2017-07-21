@@ -10,7 +10,11 @@ PosixMutex ThreadSynchronization::SerialMutex;
 PosixMutex ThreadSynchronization::SettingsMutex;
 PosixMutex ThreadSynchronization::IOMutex;
 PosixMutex ThreadSynchronization::IdKeyMutex;
-int        ThreadSynchronization::semid=-1;
+int        ThreadSynchronization::semIdEntranceBarrier=-1;
+int        ThreadSynchronization::semIdExitBarrier=-1;
+       
+void ThreadSynchronization::AcquireEntranceBarrierSemaphore() {
+    struct sembuf sb;
 
 void ThreadSynchronization::CreateBarrierSemaphore() {
     // create new semaphore
