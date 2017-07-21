@@ -7,6 +7,7 @@
 #include <syslog.h>
 #include <sys/time.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <json/json.h>
 #include <json/json-forwards.h>

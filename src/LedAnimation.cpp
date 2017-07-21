@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
 #include <iostream>
 #include <syslog.h>
+#include <unistd.h>
 
 #include <onposix/AbstractThread.hpp>
 #include <onposix/PosixMutex.hpp>

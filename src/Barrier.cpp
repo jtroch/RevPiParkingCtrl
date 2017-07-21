@@ -7,6 +7,7 @@
 #include <syslog.h>
 #include <sys/time.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>

@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <syslog.h>
+#include <unistd.h>
 
 #include <json/json.h>
 #include <json/json-forwards.h>
