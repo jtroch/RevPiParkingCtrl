@@ -18,7 +18,8 @@
 #include "LedAnimation.hpp"
 #include "Settings.hpp"
 #include "Authentication.hpp"
-#include "LoopDetection.hpp"
+#include "LoopDetectionEntrance.hpp"
+#include "LoopDetectionExit.hpp"
 #include "Barrier.hpp"
 #include "IOHandler.hpp"
 
@@ -60,11 +61,6 @@ int main()
     syslog(LOG_INFO, "Only static Authentication ..");
 #endif
 
-    Settings settings;
-    LoopDetection loopDetectionEntrance(ENTRANCE);
-    LoopDetection loopDetectionExit(EXIT);
-    Barrier barrier(ENTRANCE_EXIT);
-    
     syslog(LOG_INFO, "Checking all IOs ..");
     syslog(LOG_INFO, "EntranceLoopAct: %i",  IOHandler::GetIO("EntranceLoopAct"));
     syslog(LOG_INFO, "ExitLoopAct    : %i",  IOHandler::GetIO("ExitLoopAct"));
@@ -77,17 +73,27 @@ int main()
 
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 
+    Settings settings;
     ledAnimation.start();
-    //settings.start();
-    loopDetectionEntrance.start();
-    loopDetectionExit.start();
-    barrier.start();
+    settings.start();
+
+    Barrier entranceBarrier(ENTRANCE);
+    Barrier exitBarrier(EXIT);
+    LoopDetectionEntrance entranceLoopDetection;
+    LoopDetectionExit exitLoopDetection;
+    entranceBarrier.start();
+    exitBarrier.start();
+    entranceLoopDetection.start();
+    exitLoopDetection.start();
+
+    // Wait for all tasks to finish but the application should not get here
     
     ledAnimation.waitForTermination();
     settings.waitForTermination();
-    loopDetectionEntrance.waitForTermination();
-    loopDetectionExit.waitForTermination();
-    barrier.waitForTermination();
-  
+    entranceLoopDetection.waitForTermination();
+    entranceBarrier.waitForTermination();
+    exitLoopDetection.waitForTermination();
+    exitBarrier.waitForTermination();
+
     return 0;
 }

@@ -5,9 +5,8 @@
 
 using namespace onposix;
 
-class LoopDetection : public HttpThread { 
+class LoopDetectionExit : public HttpThread { 
     private: 
-        GateType loop;
         //struct itimerval timer;
         //void fireTimer();
         //void timerCallback(int signum);
@@ -17,10 +16,9 @@ class LoopDetection : public HttpThread {
         int HandleRequest();
         std::string url;
         std::string body;
-        char loopstring[12];
 
     public:
-        LoopDetection(GateType type);
-        ~LoopDetection() {};
+        LoopDetectionExit();
+        ~LoopDetectionExit() {};
         void run();
 };

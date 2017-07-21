@@ -16,42 +16,63 @@ int        ThreadSynchronization::semIdExitBarrier=-1;
 void ThreadSynchronization::AcquireEntranceBarrierSemaphore() {
     struct sembuf sb;
 
-void ThreadSynchronization::CreateBarrierSemaphore() {
-    // create new semaphore
-    semid = semget(MY_SEM_ID, 1, 0666 | IPC_CREAT);
-
-    if (semid >= 0) {
-        syslog(LOG_DEBUG, "SYNCHRO: semaphore %i created", semid);
-    } else {
-        syslog(LOG_ERR, "SYNCHRO: semaphore creation error");
-    }
-}
-       
-void ThreadSynchronization::AcquireBarrierSemaphore() {
-    struct sembuf sb;
-
-    if (semid<0) CreateBarrierSemaphore();
+    if (semIdEntranceBarrier < 0)
+        if ((semIdEntranceBarrier=semget(SEM_ID_ENTRANCE, 1, 0666 | IPC_CREAT)) < 0)  
+            syslog(LOG_ERR, "SYNCHRO: entrance barrier semaphore creation error");
 
     // acquire
     sb.sem_num=0;
     sb.sem_op=-1;
     sb.sem_flg=0;
-    if (semop(semid, &sb, 1) >= 0) {
-         syslog(LOG_DEBUG, "SYNCHRO: semaphore acquired");
+    if (semop(semIdEntranceBarrier, &sb, 1) >= 0) {
+         syslog(LOG_DEBUG, "SYNCHRO: entrance barrier semaphore acquired");
     }
 }
 
-void ThreadSynchronization::ReleaseBarrierSemaphore() {
+void ThreadSynchronization::ReleaseEntranceBarrierSemaphore() {
     struct sembuf sb;
 
-    if (semid<0) CreateBarrierSemaphore();
+    if (semIdEntranceBarrier < 0)
+        if ((semIdEntranceBarrier=semget(SEM_ID_ENTRANCE, 1, 0666 | IPC_CREAT)) < 0)  
+            syslog(LOG_ERR, "SYNCHRO: entrance barrier semaphore creation error");
+
+    // release
+    sb.sem_num=0;
+    sb.sem_op= 1;
+    sb.sem_flg=0;
+    if (semop(semIdEntranceBarrier, &sb, 1) >= 0) {
+         syslog(LOG_DEBUG, "SYNCHRO: entrance barrier semaphore released");
+    }
+}
+
+void ThreadSynchronization::AcquireExitBarrierSemaphore() {
+    struct sembuf sb;
+
+    if (semIdExitBarrier < 0) 
+        if ((semIdExitBarrier=semget(SEM_ID_EXIT, 1, 0666 | IPC_CREAT)) < 0)  
+            syslog(LOG_ERR, "SYNCHRO: exit barrier semaphore creation error");
+
+    // acquire
+    sb.sem_num=0;
+    sb.sem_op=-1;
+    sb.sem_flg=0;
+    if (semop(semIdExitBarrier, &sb, 1) >= 0) {
+         syslog(LOG_DEBUG, "SYNCHRO: exit barrier semaphore acquired");
+    }
+}
+
+void ThreadSynchronization::ReleaseExitBarrierSemaphore() {
+    struct sembuf sb;
+
+    if (semIdExitBarrier < 0) 
+        if ((semIdExitBarrier=semget(SEM_ID_EXIT, 1, 0666 | IPC_CREAT)) < 0)  
+            syslog(LOG_ERR, "SYNCHRO: exit barrier semaphore creation error");
 
     // acquire
     sb.sem_num=0;
     sb.sem_op= 1;
     sb.sem_flg=0;
-    if (semop(semid, &sb, 1) >= 0) {
-         syslog(LOG_DEBUG, "SYNCHRO: semaphore released");
+    if (semop(semIdExitBarrier, &sb, 1) >= 0) {
+         syslog(LOG_DEBUG, "SYNCHRO: exit barrier semaphore released");
     }
-
 }

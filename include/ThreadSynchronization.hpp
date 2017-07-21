@@ -2,7 +2,8 @@
 
 #include <onposix/PosixMutex.hpp>
 
-#define MY_SEM_ID 1
+#define SEM_ID_ENTRANCE 1
+#define SEM_ID_EXIT 2
 
 using namespace onposix;
 
@@ -13,9 +14,12 @@ class ThreadSynchronization {
         static PosixMutex IOMutex;
         static PosixMutex IdKeyMutex;
 
-        static void CreateBarrierSemaphore();
-        static void AcquireBarrierSemaphore();
-        static void ReleaseBarrierSemaphore();
+        static void AcquireEntranceBarrierSemaphore();
+        static void ReleaseEntranceBarrierSemaphore();
+
+        static void AcquireExitBarrierSemaphore();
+        static void ReleaseExitBarrierSemaphore();
     private:
-        static int semid;
+        static int semIdEntranceBarrier;
+        static int semIdExitBarrier;
 };
