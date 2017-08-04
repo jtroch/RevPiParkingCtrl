@@ -15,11 +15,12 @@
 
 bool Settings::EntranceCO=false;
 bool Settings::ExitCO=false;
-bool Settings::PLCAuto=false;
+bool Settings::PLCAuto=true;
 int  Settings::LoopTimeout=3000;
 int  Settings::HttpTimeout=2000;
 int  Settings::BarrierPulseLength=1000;
 bool Settings::TestOutput=false;
+SiteType Settings::Site=ZWIJNAARDE;
 
 Settings::Settings() {
     // parent class constructor is automatically called
@@ -35,6 +36,14 @@ Settings::Settings() {
     RestClient::HeaderFields headers;
     headers["Content-Type"] = "text/json";
     HttpConnection->SetHeaders(headers);
+}
+
+long long Settings::CurrentTimeInMilliseconds() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
 }
 
 int Settings::HandleRequest() {

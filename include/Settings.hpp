@@ -19,6 +19,7 @@ private:
     static int  HttpTimeout;
     static int  BarrierPulseLength;
     static bool TestOutput;
+    
 
     int ParseResponse(RestClient::Response response);
     int HandleRequest();  
@@ -27,6 +28,8 @@ private:
 public:
     Settings();
     void run();
+
+    static SiteType Site;
 
     static void Update(
         bool entranceCO,
@@ -37,6 +40,8 @@ public:
         int  barrierPulseLength,
         bool testOutput
     );
+    static long long CurrentTimeInMilliseconds();
+
     static bool PLCWorksAutonomously();
     static bool BarrierContinuouslyOpen(GateType type);
 

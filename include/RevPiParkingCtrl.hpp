@@ -38,4 +38,9 @@ enum GateType {
     ENTRANCE_EXIT
 };
 
+enum SiteType {
+    ZWIJNAARDE,
+    ST_DENIJS,
+};
+
 #endif

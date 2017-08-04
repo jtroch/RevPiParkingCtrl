@@ -51,9 +51,20 @@ LoopDetectionEntrance::LoopDetectionEntrance() {
 int LoopDetectionEntrance::HandleRequest() {
     RestClient::Response response;
 
-    syslog(LOG_DEBUG, "LOOPDETECTION ENTRANCE: sending GET %s", url.c_str());
-    response = HttpConnection->get(url);
-    return ParseResponse(response);
+    if (Settings::PLCWorksAutonomously()) {
+        syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: autonomous (allowed)");
+#ifdef SITE_ZWIJNAARDSESTEENWEG
+        ThreadSynchronization::ReleaseExitBarrierSemaphore();
+        ThreadSynchronization::ReleaseEntranceBarrierSemaphore();
+#else
+        ThreadSynchronization::ReleaseEntranceBarrierSemaphore();
+#endif
+        return 1;
+    } else {
+        syslog(LOG_DEBUG, "LOOPDETECTION ENTRANCE: sending GET %s", url.c_str());
+        response = HttpConnection->get(url);
+        return ParseResponse(response);
+    }
 }
 
 int LoopDetectionEntrance::ParseResponse(RestClient::Response response) {
@@ -78,7 +89,12 @@ int LoopDetectionEntrance::ParseResponse(RestClient::Response response) {
 
     if (allowed) {
         syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: access allowed");
+#ifdef SITE_ZWIJNAARDSESTEENWEG
+        ThreadSynchronization::ReleaseExitBarrierSemaphore();
         ThreadSynchronization::ReleaseEntranceBarrierSemaphore();
+#else
+        ThreadSynchronization::ReleaseEntranceBarrierSemaphore();
+#endif
     } else {
         syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: access NOT allowed");
     }
@@ -88,12 +104,6 @@ int LoopDetectionEntrance::ParseResponse(RestClient::Response response) {
 
 #ifdef SITE_ZWIJNAARDSESTEENWEG
 
-double TimeInMilliseconds() {
-    struct timeval tv = { 0 };
-    gettimeofday(&tv, NULL);
-    return (tv.tv_usec) / 1000 ;
-}
-
 void LoopDetectionEntrance::run() {
     
     bool bOnEntranceLoop=false;
@@ -101,7 +111,7 @@ void LoopDetectionEntrance::run() {
     bool bOnEntranceLoop_d=false;
     bool bEntranceDetected=false;
     bool bEntranceSequence=false;
-    double EntranceSequenceStartTime;
+    long long EntranceSequenceStartTime;
 
     syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: thread started");
 
@@ -116,32 +126,39 @@ void LoopDetectionEntrance::run() {
         // In case there is a vehicle on the exit loop, it will wait until the exit loop is deactivated
         if (bOnEntranceLoop && !bOnEntranceLoop_d) {
             bEntranceDetected=true;
+            syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: detected");
         } 
 
         if (bEntranceDetected) {
             if (!bOnExitLoop) {
                 bEntranceDetected = false;
                 bEntranceSequence = true;
-                EntranceSequenceStartTime = TimeInMilliseconds();
+                EntranceSequenceStartTime = Settings::CurrentTimeInMilliseconds();
+                syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: sequence started");
             } else {
                 //wait until lus uitrit deactivated;
+                syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: vehicle on exit loop");
             }
         }
 
         if (bEntranceSequence) {
             if (!bOnEntranceLoop) { // vehicle leaves entrance loop 
                 bEntranceSequence=false;
-            } else if ((TimeInMilliseconds()-EntranceSequenceStartTime) > 2000) {
-                bOnEntranceLoop = IOHandler::GetIO("EntranceLoopAct");
+                syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: sequence aborted");
+            } else if ((Settings::CurrentTimeInMilliseconds()-EntranceSequenceStartTime) > 2000) {
                 if (bOnEntranceLoop) {
                     bEntranceSequence = false;
+                    //syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: open barrier");
                     HandleRequest();
                 }
+            } else {
+                syslog(LOG_INFO, "LOOPDETECTION ENTRANCE: wait (%lld)", Settings::CurrentTimeInMilliseconds());
             }
         }
 
-        bOnEntranceLoop_d = bOnEntranceLoop;      
-        usleep(100000); 
+        bOnEntranceLoop_d = bOnEntranceLoop;  
+        //syslog(LOG_INFO, "%lld", CurrentTimeInMilliseconds());
+        usleep(500000); 
     }
     
     return;

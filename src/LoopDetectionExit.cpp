@@ -53,7 +53,12 @@ int LoopDetectionExit::HandleRequest() {
 
     if (Settings::PLCWorksAutonomously()) {
         syslog(LOG_INFO, "LOOPDETECTION EXIT: autonomous (allowed)");
+#ifdef SITE_ZWIJNAARDSESTEENWEG
         ThreadSynchronization::ReleaseExitBarrierSemaphore();
+        ThreadSynchronization::ReleaseEntranceBarrierSemaphore();
+#else
+        ThreadSynchronization::ReleaseExitBarrierSemaphore();
+#endif
         return 1;
     } else {
         syslog(LOG_DEBUG, "LOOPDETECTION EXIT: sending GET %s", url.c_str());
@@ -104,6 +109,7 @@ void LoopDetectionExit::run() {
     bool bOnEntranceLoop=false;
     bool bOnExitLoop=false;
     bool bOnExitLoop_d=false;
+    bool bExitDetected=false;
     bool bExitSequence=false;
     bool bTicket=false;
     bool bTicket_d=false;
@@ -126,35 +132,60 @@ void LoopDetectionExit::run() {
         // when there is no vehicle on the exit loop and when the entrance loop is at least activated for 2 seconds
         // In case there is a vehicle on the exit loop, it will wait until the exit loop is deactivated
         if (bOnExitLoop && !bOnExitLoop_d) {
-            bExitSequence=true;
+            bExitDetected=true;
+            syslog(LOG_INFO, "LOOPDETECTION EXIT: exit detected");
         } 
+
         if (bTicket && !bTicket_d) {
             bTicketInserted=true;
+            syslog(LOG_INFO, "LOOPDETECTION EXIT: ticket inserted");
         } 
         if (bMoney && !bMoney_d) {
             bMoneyInserted=true;
+            syslog(LOG_INFO, "LOOPDETECTION EXIT: money inserted");
         } 
 
-        if (bExitSequence) {
-            if (!bOnExitLoop) {  
-                bExitSequence=false;
-            } else {
-                if (!bOnEntranceLoop) {
-                    if (bTicketInserted || bMoneyInserted) {
-                        bExitSequence=false;
-                        bTicketInserted=false;
-                        bMoneyInserted=false;
-                        HandleRequest();
-                    }
+        if (bOnExitLoop) {
+            if (!bOnEntranceLoop) {
+                if (bTicketInserted || bMoneyInserted) {
+                    bTicketInserted=false;
+                    bMoneyInserted=false;
+                    HandleRequest();
                 }
+            } else {
+                syslog(LOG_INFO, "LOOPDETECTION EXIT: vehicle on entrance loop");
             }
         }
+
+        /*
+        if (bExitDetected) {
+            bExitSequence=true;
+            bExitDetected=false;
+        }
+
+        if (bExitSequence) { 
+            if (!bOnExitLoop) { // vehicle leaves exit loop 
+                bExitSequence=false;
+                syslog(LOG_INFO, "LOOPDETECTION EXIT: sequence aborted");
+            }
+            if (!bOnEntranceLoop) {
+                if (bTicketInserted || bMoneyInserted) {
+                    bExitSequence=false;
+                    bTicketInserted=false;
+                    bMoneyInserted=false;
+                    syslog(LOG_INFO, "LOOPDETECTION EXIT: open barrier");
+                    HandleRequest();
+                }
+            } else {
+                syslog(LOG_INFO, "LOOPDETECTION EXIT: vehicle on entrance loop");
+            }
+        } */
 
         bOnExitLoop_d = bOnExitLoop; 
         bTicket_d = bTicket;
         bMoney_d =  bMoney;
 
-        usleep(100000); 
+        usleep(500000); 
     }
     return;
 }

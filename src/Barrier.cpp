@@ -39,12 +39,13 @@ void Barrier::run() {
     while(1)  {
         if (barrier==ENTRANCE) {
             ThreadSynchronization::AcquireEntranceBarrierSemaphore();
+            syslog(LOG_INFO, "BARRIER: entrance opening");
         } else {
             ThreadSynchronization::AcquireExitBarrierSemaphore();
+            syslog(LOG_INFO, "BARRIER: exit opening");
         }
        
         setBarrier(true);
-        syslog(LOG_INFO, "BARRIER: opened");
         usleep(1000000);
     
         if (Settings::BarrierContinuouslyOpen(barrier)) {
