@@ -1,5 +1,7 @@
-#include <onposix/AbstractThread.hpp>
+#ifndef CLASS_BARRIER
+#define CLASS_BARRIER
 
+#include <onposix/AbstractThread.hpp>
 #include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 
@@ -17,3 +19,5 @@ class Barrier : public AbstractThread {
         ~Barrier() {};
         void run();
 };
+
+#endif

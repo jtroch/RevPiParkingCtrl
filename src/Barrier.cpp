@@ -25,7 +25,7 @@ Barrier::Barrier(GateType type) {
 }
 
 void Barrier::setBarrier(bool open)  {
-    if (barrier==ENTRANCE) {
+    if ((barrier==ENTRANCE) || (barrier==ENTRANCE_EXIT)) {
         IOHandler::SetIO("OpenEntrance", open);
     } else {
         IOHandler::SetIO("OpenExit", open);
@@ -40,9 +40,12 @@ void Barrier::run() {
         if (barrier==ENTRANCE) {
             ThreadSynchronization::AcquireEntranceBarrierSemaphore();
             syslog(LOG_INFO, "BARRIER: entrance opening");
-        } else {
+        } else if (barrier==EXIT) {
             ThreadSynchronization::AcquireExitBarrierSemaphore();
             syslog(LOG_INFO, "BARRIER: exit opening");
+        } else if (barrier==ENTRANCE_EXIT) {
+            ThreadSynchronization::AcquireEntranceBarrierSemaphore();
+            syslog(LOG_INFO, "BARRIER: barrier opening");
         }
        
         setBarrier(true);

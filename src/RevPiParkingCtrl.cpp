@@ -22,10 +22,8 @@
 #include "LedAnimation.hpp"
 #include "Settings.hpp"
 #include "Authentication.hpp"
-#include "LoopDetectionEntrance.hpp"
-#include "LoopDetectionExit.hpp"
-#include "CentralProcessing.hpp"
-#include "Barrier.hpp"
+#include "SiteZwijnaardeProcessing.hpp"
+#include "SiteStDenijsProcessing.hpp"
 #include "IOHandler.hpp"
 
 #include <piControlIf.hpp>
@@ -104,8 +102,8 @@ int main()
     syslog(LOG_INFO, "TicketAct      : %i",  IOHandler::GetIO("TicketAct"));
     syslog(LOG_INFO, "MoneyAct       : %i",  IOHandler::GetIO("MoneyAct"));
     // OUPUTS
-    syslog(LOG_INFO, "Continu12V     :   "); IOHandler::SetIO("Continu12V", true);
-    sleep(1); IOHandler::SetIO("Continu12V", false);
+    syslog(LOG_INFO, "ContinuOn     :   "); IOHandler::SetIO("ContinuOn", true);
+    sleep(1); IOHandler::SetIO("ContinuOn", false);
     syslog(LOG_INFO, "ContinuClosed  :   "); IOHandler::SetIO("ContinuClosed", true);
     sleep(1); IOHandler::SetIO("ContinuClosed", false);
     syslog(LOG_INFO, "OpenEntrance   :   "); IOHandler::SetIO("OpenEntrance", true);
@@ -115,30 +113,31 @@ int main()
 
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 
-    
     ledAnimation.start();
     //settings.start();
-    Barrier entranceBarrier(ENTRANCE);
-    Barrier exitBarrier(EXIT);
-    //LoopDetectionEntrance entranceLoopDetection;
-    //LoopDetectionExit exitLoopDetection;
-    CentralProcessing centralProcessing;
 
-    centralProcessing.start();
-    entranceBarrier.start();
-    exitBarrier.start();
-    //entranceLoopDetection.start();
-    //exitLoopDetection.start();
+    if (Settings::Site==ZWIJNAARDE) {
+        SiteZwijnaardeProcessing zwijnaardeProcessing;
+        zwijnaardeProcessing.start();
+        // .......
+        // Wait for all tasks to finish but the application should not get here
+        zwijnaardeProcessing.waitForTermination();
+    } else {
+        SiteStDenijsProcessing stDenijsProcessing;
+        stDenijsProcessing.start();
+        // .......
+        // Wait for all tasks to finish but the application should not get here
+        stDenijsProcessing.waitForTermination();
+    }
 
-    // Wait for all tasks to finish but the application should not get here
-    
     ledAnimation.waitForTermination();
     settings.waitForTermination();
-    centralProcessing.waitForTermination();
-    //entranceLoopDetection.waitForTermination();
-    //entranceBarrier.waitForTermination();
-    //exitLoopDetection.waitForTermination();
-    exitBarrier.waitForTermination();
+
+    //Barrier entranceBarrier(ENTRANCE);
+    //Barrier exitBarrier(EXIT);
+    //enranceBarrier.start();
+    //exitBarrier.start();
+
 
     return 0;
 }

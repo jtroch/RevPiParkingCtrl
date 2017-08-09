@@ -5,7 +5,7 @@
 
 using namespace onposix;
 
-class LoopDetectionExit : public HttpThread { 
+class ExitProcessing : public HttpThread { 
     private: 
         //struct itimerval timer;
         //void fireTimer();
@@ -18,7 +18,7 @@ class LoopDetectionExit : public HttpThread {
         std::string body;
 
     public:
-        LoopDetectionExit();
-        ~LoopDetectionExit() {};
+        ExitProcessing();
+        ~ExitProcessing() {};
         void run();
 };

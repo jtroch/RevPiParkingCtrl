@@ -5,7 +5,7 @@
 
 using namespace onposix;
 
-class LoopDetectionEntrance : public HttpThread { 
+class EntranceProcessing : public HttpThread { 
     private: 
         //struct itimerval timer;
         //void fireTimer();
@@ -18,7 +18,7 @@ class LoopDetectionEntrance : public HttpThread {
         std::string body;
 
     public:
-        LoopDetectionEntrance();
-        ~LoopDetectionEntrance() {};
+        EntranceProcessing();
+        ~EntranceProcessing() {};
         void run();
 };

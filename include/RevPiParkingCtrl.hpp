@@ -43,4 +43,23 @@ enum SiteType {
     ST_DENIJS,
 };
 
+// list of IOs
+/*   Name                   Type            IO          Definition
+
+    EntranceLoopAct         Input           I_1         active when vehicle is on entrance loop
+    ExitLoopAct             Input           I_2         active when vehicle is on exit loop
+    EntranceCO              Input           I_3         active means entrance barrier is always open
+    ExitCO                  Input           I_4         active means exit barrier is always open
+    PLCAuto                 Input           I_5         active means PLC works atonomously without server
+    TicketAct               Input           I_6         active (pulse) when ticket is inserted 
+    MoneyAct                Input           I_7         active (pulse) when money is inserted
+
+    ContinuOn               Output          O_1         Output continuously on
+    ContinuClosed           Output          O_2         To 'Continue closed' input of barrier in case of site ZWIJNAARDE where there is only one barrier
+    OpenEntrance            Output          O_3         active (pulse) means open entrance barrier
+    OpenExit                Output          O_4         active (pulse) means open exit barrier
+
+*/
+
+
 #endif
