@@ -12,11 +12,13 @@
 #include "SiteZwijnaardeProcessing.hpp"
 
 void SiteZwijnaardeProcessing::start() {
-    processing.start();
+    //processing.start();
+    lprProcessing.start();
     barrier->start();
 }
 
 void SiteZwijnaardeProcessing::waitForTermination() {
-    processing.waitForTermination(); 
+    //processing.waitForTermination(); 
+    lprProcessing.waitForTermination();
     barrier->waitForTermination();
 }

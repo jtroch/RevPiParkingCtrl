@@ -2,11 +2,13 @@
 #include <restclient-cpp/restclient.h>
 
 #include "CentralProcessing.hpp"
+#include "LPRProcessing.hpp"
 #include "Barrier.hpp"
 
 class SiteZwijnaardeProcessing { 
     private: 
-        CentralProcessing processing; 
+        CentralProcessing processing;
+        LPRProcessing lprProcessing; 
         Barrier * barrier;
 
     public:

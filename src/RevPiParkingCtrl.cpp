@@ -113,7 +113,7 @@ int main()
 
     std::cout << "Finished, starting all other thtreads.." << std::endl;
 
-    ledAnimation.start();
+    //ledAnimation.start();
     //settings.start();
 
     if (Settings::Site==ZWIJNAARDE) {

@@ -39,7 +39,7 @@ EntranceProcessing::EntranceProcessing() {
     // set headers
     RestClient::HeaderFields headers;
     headers["Content-Type"] = "text/json";
-    headers["Key"] = Authentication::GetKey();
+    headers["Token"] = Authentication::GetToken();
     HttpConnection->SetHeaders(headers);
 
     // compose body

@@ -13,11 +13,11 @@
 //#define LOG_LEVEL_FILE  LOG_ERRORS
 //#define LOG_LEVEL_FILE  LOG_ALL
 
-//#define SERVER_ADDRESS "http://192.168.1.110"
+//#define SERVER_ADDRESS "http://api.imber.nu"
 
-#define SERVER_ADDRESS "http://api.rsbots.org"
+#define SERVER_ADDRESS "http://192.168.0.132"
 
-#define BASE_API_PATH  "/api.imber.nu/client/"
+#define BASE_API_PATH  "/v1/controller/2/parking"
 
 //#define DYNAMIC_AUTHENTICATION
 
@@ -53,6 +53,7 @@ enum SiteType {
     PLCAuto                 Input           I_5         active means PLC works atonomously without server
     TicketAct               Input           I_6         active (pulse) when ticket is inserted 
     MoneyAct                Input           I_7         active (pulse) when money is inserted
+    SafetyLoopAct           Input           I_8         active when vehicle is on safety loop
 
     ContinuOn               Output          O_1         Output continuously on
     ContinuClosed           Output          O_2         To 'Continue closed' input of barrier in case of site ZWIJNAARDE where there is only one barrier

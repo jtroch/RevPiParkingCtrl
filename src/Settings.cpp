@@ -59,7 +59,7 @@ int Settings::ParseResponse(RestClient::Response response) {
     Json::Value root;
     Json::Reader reader;
     int id;
-    int key;
+    string token;
     int loopTimeout;
     int httpTimeout;
     int pulseLength;
@@ -69,11 +69,14 @@ int Settings::ParseResponse(RestClient::Response response) {
     
     if (parsingSuccessful)
     {
-        if ((key=root.get("key" , 0).asInt())==0) { // defaults to 0 if not found in body
-            syslog(LOG_DEBUG, "SETTINGS: key not found in response");
+        if (root.isMember("token")) {
+            token=root.get("token" , 0).asString();
+        } else {
+            syslog(LOG_DEBUG, "AUTHENTICATION: token not found in response");
             return 0;
-        }  
-        if (key==Authentication::GetKey()) {
+        }
+
+        if (token==Authentication::GetToken()) {
             // parse all other parameters if key matches
             // Critical section
             ThreadSynchronization::SettingsMutex.lock();
